@@ -2,17 +2,19 @@ import torch
 import torch.nn as nn
 
 class VectorFieldNet(nn.Module):
-    """
-    预测流场速度 v(x_t, t) 的网络。
-    输入: x (batch, dim), t (batch, 1)
-    输出: v (batch, dim)
-    """
     def __init__(self, input_dim, hidden_dim=128):
         super().__init__()
         self.input_dim = input_dim
         
         # 时间嵌入
         self.time_mlp = nn.Sequential(
+            nn.Linear(1, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, hidden_dim)
+        )
+        
+        # === 新增：分数嵌入 ===
+        self.y_mlp = nn.Sequential(
             nn.Linear(1, hidden_dim),
             nn.SiLU(),
             nn.Linear(hidden_dim, hidden_dim)
@@ -27,30 +29,27 @@ class VectorFieldNet(nn.Module):
         
         # 联合处理
         self.joint_mlp = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim),
+            # 输入维度变为 3 * hidden_dim (x + t + y)
+            nn.Linear(hidden_dim * 3, hidden_dim),
             nn.SiLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.SiLU(),
-            nn.Linear(hidden_dim, input_dim) # 输出维度与输入相同
+            nn.Linear(hidden_dim, input_dim)
         )
 
-    def forward(self, x, t):
-        # 确保输入是 Flatten 的 (B, D)
-        if x.dim() > 2:
-            x = x.view(x.size(0), -1)
-            
-        # 确保 t 是 (B, 1)
-        if t.dim() == 1:
-            t = t.view(-1, 1)
+    def forward(self, x, t, y): # 接收 y
+        if x.dim() > 2: x = x.view(x.size(0), -1)
+        if t.dim() == 1: t = t.view(-1, 1)
+        if y.dim() == 1: y = y.view(-1, 1) # 确保 y 是 (B, 1)
             
         t_emb = self.time_mlp(t)
         x_emb = self.x_mlp(x)
+        y_emb = self.y_mlp(y) # 处理 y
         
-        # 简单的相加融合 (Conditioning)
-        h = x_emb + t_emb 
+        # 拼接 (Concat) 比相加更能保留条件信息
+        h = torch.cat([x_emb, t_emb, y_emb], dim=-1)
         v = self.joint_mlp(h)
         return v
-
 
 # models.py (追加在后面)
 

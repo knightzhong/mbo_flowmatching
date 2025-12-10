@@ -104,7 +104,7 @@ def semantic_pairing(x_low, x_high, y_high, k=50):
     # 内存优化：分批计算
     x_source = []
     x_target = []
-    
+    y_target = []
     batch_size = 100
     for i in range(0, len(x_low), batch_size):
         x_low_batch = x_low[i : i+batch_size] # (B, D)
@@ -129,12 +129,12 @@ def semantic_pairing(x_low, x_high, y_high, k=50):
         # 构建配对
         x_source.append(x_low_batch)
         x_target.append(x_high[best_high_indices])
-        
+        y_target.append(y_high[best_high_indices])
     x_source = torch.cat(x_source, dim=0)
     x_target = torch.cat(x_target, dim=0)
-    
+    y_target = torch.cat(y_target, dim=0)
     print(f"Pairing complete. Created {len(x_source)} pairs.")
-    return x_source, x_target
+    return x_source, x_target, y_target
 
 # def build_paired_dataloader(config):
 #     task, x, y = get_design_bench_data(config.TASK_NAME)
@@ -246,9 +246,9 @@ def build_paired_dataloader(config, proxy=None):
     print(f"Pools: Source={len(x_low)}, Target={len(x_high)}")
     
     # 配对
-    x_src, x_tgt = semantic_pairing(x_low, x_high, y_high, k=config.TOP_K_NEIGHBORS)
+    x_src, x_tgt, y_target = semantic_pairing(x_low, x_high, y_high, k=config.TOP_K_NEIGHBORS)
     
-    dataset = TensorDataset(x_src, x_tgt)
+    dataset = TensorDataset(x_src, x_tgt, y_target)
     loader = DataLoader(dataset, batch_size=config.BATCH_SIZE, shuffle=True)
     
     # !!! 关键：将 mean_x, std_x 也返回给 main.py !!!

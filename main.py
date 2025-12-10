@@ -77,9 +77,9 @@ def main():
     for epoch in range(cfg.EPOCHS):
         net.train()
         total_loss = 0
-        for x0, x1 in train_loader:
+        for x0, x1,y1 in train_loader:
             optimizer.zero_grad()
-            loss = cfm.compute_loss(x0, x1)
+            loss = cfm.compute_loss(x0, x1, y1)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
@@ -114,9 +114,12 @@ def main():
     GUIDANCE_SCALE = 0.0 
     print(f"Using Guidance Scale: {GUIDANCE_SCALE}")
     
-    # 带引导的采样
+    TARGET_SCORE_VAL = 5.0 
+    print(f"Conditioning on Target Score: {TARGET_SCORE_VAL} (Normalized)")
+
     x_optimized_continuous = cfm.sample(
         x_start, 
+        y_target=TARGET_SCORE_VAL, # 传入这个强条件
         steps=cfg.ODE_STEPS,
         guidance_fn=guidance_func,
         guidance_scale=GUIDANCE_SCALE
