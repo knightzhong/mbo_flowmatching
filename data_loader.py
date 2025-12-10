@@ -3,34 +3,8 @@ import numpy as np
 import design_bench
 from torch.utils.data import TensorDataset, DataLoader
 import torch.nn.functional as F
-# def get_design_bench_data(task_name):
-#     """加载原始数据"""
-#     print(f"Loading task: {task_name}...")
-#     task = design_bench.make(task_name)
-    
-#     x = task.x
-#     y = task.y
-    
-#     # 针对离散数据 (TFBind, RNA) 的处理
-#     if task.is_discrete:
-#         # Design-Bench 默认 x 是 indices (N, L)
-#         # 我们需要将其转换为 Logits 或 One-Hot (N, L * Vocab)
-#         # task.to_logits() 会返回 (N, L, Vocab)
-#         x = task.to_logits(x) 
-#         # Flatten 成 (N, D) 以便输入 MLP
-#         x = x.reshape(x.shape[0], -1) 
-        
-#         # 使用 Softmax 归一化，使其像概率分布 (Continuous Relaxation)
-#         # 注意：design-bench 的 logits 可能尚未归一化
-#         x = torch.tensor(x, dtype=torch.float32)
-#         # 这里的 x 已经是连续值了，可以直接用于 Flow Matching
-#     else:
-#         x = torch.tensor(x, dtype=torch.float32)
-        
-#     y = torch.tensor(y, dtype=torch.float32).view(-1)
-#     return task, x, y
 def get_design_bench_data(task_name):
-    """加载原始数据 (强制 4-Channel One-Hot)"""
+    """加载原始数据 (使用 Logits + Z-Score 标准化)"""
     print(f"Loading task: {task_name}...")
     task = design_bench.make(task_name)
     
@@ -38,34 +12,80 @@ def get_design_bench_data(task_name):
     y = task.y
     
     if task.is_discrete:
-        # === 关键修改：手动 One-Hot，强制 Vocab=4 ===
-        print("Processing discrete data manually...")
+        # === 核心修改 1: 使用 Logits 而非 One-Hot ===
+        # task.to_logits(x) 将离散索引转换为连续的 Logits 数值
+        # 形状: (N, L, Vocab)
+        x = task.to_logits(x)
         
-        # 1. 确保 x 是 Long 类型的索引 (N, L)
-        if x.ndim == 3: 
-            # 极少数情况如果是 (N, L, 1)
-            x = x.squeeze(-1)
-        
-        x_indices = torch.tensor(x, dtype=torch.long)
-        
-        # 2. 强制转为 4 维 One-Hot (N, L, 4)
-        # TFBind8/10 都是 DNA，Vocab 固定是 4
-        vocab_size = 4
-        x_onehot = F.one_hot(x_indices, num_classes=vocab_size).float()
-        
-        print(f"Manual One-Hot Shape: {x_onehot.shape}") # 应该是 (N, 8, 4)
-        
-        # 3. 展平 (N, 32)
-        x = x_onehot.view(x_onehot.shape[0], -1)
-        
-    else:
+        # 展平: (N, L * Vocab) -> (N, 32) for TFBind8
+        x = x.reshape(x.shape[0], -1)
         x = torch.tensor(x, dtype=torch.float32)
         
+        # === 核心修改 2: Z-Score 标准化 (参考 ROOT) ===
+        # 计算全局的均值和标准差 (Per dimension)
+        mean_x = torch.mean(x, dim=0)
+        std_x = torch.std(x, dim=0)
+        
+        # 防止除以 0 (虽然 logits 很少为 0，但为了健壮性)
+        std_x = torch.where(std_x == 0, torch.tensor(1.0), std_x)
+        
+        # 执行标准化: N(0, 1)
+        x = (x - mean_x) / std_x
+        
+        print(f"Data Normalized. Mean: {x.mean().item():.4f}, Std: {x.std().item():.4f}")
+        
+    else:
+        # 连续任务也建议做标准化
+        x = torch.tensor(x, dtype=torch.float32)
+        # 这里暂时保留你的原始逻辑，如果是 Ant 等任务，建议也加上标准化
+        if x.dim() > 2: x = x.view(x.shape[0], -1)
+        
+        mean_x = torch.mean(x, dim=0)
+        std_x = torch.std(x, dim=0)
+        std_x = torch.where(std_x == 0, torch.tensor(1.0), std_x)
+        x = (x - mean_x) / std_x
+
     y = torch.tensor(y, dtype=torch.float32).view(-1)
     
-    # 注意：这里返回的 task 是干净的（处于 index 模式），
-    # 它的 predict 方法期望的是离散索引 (N, L)，这正是我们要的。
-    return task, x, y
+    # 返回统计量 mean_x, std_x 供后续反标准化使用
+    return task, x, y, mean_x, std_x
+# def get_design_bench_data(task_name):
+#     """加载原始数据 (强制 4-Channel One-Hot)"""
+#     print(f"Loading task: {task_name}...")
+#     task = design_bench.make(task_name)
+    
+#     x = task.x
+#     y = task.y
+    
+#     if task.is_discrete:
+#         # === 关键修改：手动 One-Hot，强制 Vocab=4 ===
+#         print("Processing discrete data manually...")
+        
+#         # 1. 确保 x 是 Long 类型的索引 (N, L)
+#         if x.ndim == 3: 
+#             # 极少数情况如果是 (N, L, 1)
+#             x = x.squeeze(-1)
+        
+#         x_indices = torch.tensor(x, dtype=torch.long)
+        
+#         # 2. 强制转为 4 维 One-Hot (N, L, 4)
+#         # TFBind8/10 都是 DNA，Vocab 固定是 4
+#         vocab_size = 4
+#         x_onehot = F.one_hot(x_indices, num_classes=vocab_size).float()
+        
+#         print(f"Manual One-Hot Shape: {x_onehot.shape}") # 应该是 (N, 8, 4)
+        
+#         # 3. 展平 (N, 32)
+#         x = x_onehot.view(x_onehot.shape[0], -1)
+        
+#     else:
+#         x = torch.tensor(x, dtype=torch.float32)
+        
+#     y = torch.tensor(y, dtype=torch.float32).view(-1)
+    
+#     # 注意：这里返回的 task 是干净的（处于 index 模式），
+#     # 它的 predict 方法期望的是离散索引 (N, L)，这正是我们要的。
+#     return task, x, y
 
 def semantic_pairing(x_low, x_high, y_high, k=50):
     """
@@ -180,11 +200,38 @@ def semantic_pairing(x_low, x_high, y_high, k=50):
     
 #     # 返回 x_low 作为测试集，我们从这里面挑最差的来评估提升幅度
 #     return loader, task, x_low, y[low_mask]
+# def build_paired_dataloader(config, proxy=None):
+#     task, x, y = get_design_bench_data(config.TASK_NAME)
+    
+#     # === 策略: 95% -> 5% ===
+    
+#     # 1. Target: Top 5%
+#     high_threshold = torch.quantile(y, 0.5)
+#     high_mask = y >= high_threshold
+#     x_high = x[high_mask]
+#     y_high = y[high_mask]
+    
+#     # 2. Source: All Others (Bottom 95%)
+#     # 既然 Flow 能力强，我们就让它处理所有非精英样本
+#     low_mask = y < high_threshold
+#     x_low = x[low_mask]
+    
+#     print(f"Strategy: Optimize Bottom 50% -> Top 50%")
+#     print(f"Pools: Source={len(x_low)}, Target={len(x_high)}")
+    
+#     # 配对
+#     x_src, x_tgt = semantic_pairing(x_low, x_high, y_high, k=config.TOP_K_NEIGHBORS)
+    
+#     dataset = TensorDataset(x_src, x_tgt)
+#     loader = DataLoader(dataset, batch_size=config.BATCH_SIZE, shuffle=True)
+    
+#     # 返回 x_low (Bottom 50%) 作为测试集，我们从中选最差的
+#     return loader, task, x_low, y[low_mask]
 def build_paired_dataloader(config, proxy=None):
-    task, x, y = get_design_bench_data(config.TASK_NAME)
+    # 接收新增的 mean_x, std_x
+    task, x, y, mean_x, std_x = get_design_bench_data(config.TASK_NAME)
     
-    # === 策略: 95% -> 5% ===
-    
+    # ... (中间的 split 和 semantic_pairing 逻辑保持不变) ...
     # 1. Target: Top 5%
     high_threshold = torch.quantile(y, 0.5)
     high_mask = y >= high_threshold
@@ -192,7 +239,6 @@ def build_paired_dataloader(config, proxy=None):
     y_high = y[high_mask]
     
     # 2. Source: All Others (Bottom 95%)
-    # 既然 Flow 能力强，我们就让它处理所有非精英样本
     low_mask = y < high_threshold
     x_low = x[low_mask]
     
@@ -205,5 +251,5 @@ def build_paired_dataloader(config, proxy=None):
     dataset = TensorDataset(x_src, x_tgt)
     loader = DataLoader(dataset, batch_size=config.BATCH_SIZE, shuffle=True)
     
-    # 返回 x_low (Bottom 50%) 作为测试集，我们从中选最差的
-    return loader, task, x_low, y[low_mask]
+    # !!! 关键：将 mean_x, std_x 也返回给 main.py !!!
+    return loader, task, x_low, y[low_mask], mean_x, std_x

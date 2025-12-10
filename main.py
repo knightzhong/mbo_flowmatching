@@ -12,10 +12,20 @@ def main():
     print(f"Experiment: {cfg.TASK_NAME} | Device: {cfg.DEVICE}")
     
     # 1. 准备数据
-    # train_loader 里的数据已经是 One-Hot (B, 32) 了
-    train_loader, task, test_candidates, test_scores = build_paired_dataloader(cfg)
+    # 接收 mean_x, std_x
+    train_loader, task, test_candidates, test_scores, mean_x, std_x = build_paired_dataloader(cfg)
     
-    # 获取正确的输入维度 (应该为 32)
+    # 将统计量移动到设备上
+    mean_x = mean_x.to(cfg.DEVICE)
+    std_x = std_x.to(cfg.DEVICE)
+    
+    raw_x = task.x
+    if isinstance(raw_x, np.ndarray):
+        raw_x = torch.tensor(raw_x)
+    if raw_x.ndim == 3:
+        raw_x = raw_x.squeeze(-1)
+    seq_len = raw_x.shape[1] if raw_x.ndim >= 2 else test_candidates.shape[1]
+    vocab_size = test_candidates.shape[1] // seq_len
     input_dim = test_candidates.shape[1]
     print(f"Model Input Dimension: {input_dim}")
 
@@ -24,27 +34,23 @@ def main():
     # ==========================================
     print("\nTraining Score Proxy (for Guidance)...")
     
-    # 初始化 Proxy
     proxy = ScoreProxy(input_dim=input_dim).to(cfg.DEVICE)
     proxy_opt = torch.optim.Adam(proxy.parameters(), lr=1e-3)
     
-    # 关键修复：准备全量训练数据，必须手动转 One-Hot ！！！
-    # 之前报错就是因为直接用了 task.x (N, 8) 而没有转成 (N, 32)
+    # === 修改：使用与 Flow Model 完全一致的数据处理 ===
     if task.is_discrete:
-        # 1. 拿到原始索引 (N, 8)
-        raw_x = torch.tensor(task.x, dtype=torch.long).to(cfg.DEVICE)
-        if raw_x.ndim == 3: raw_x = raw_x.squeeze(-1) # 防御性 reshape
-        
-        # 2. 强制转 One-Hot (N, 8, 4)
-        vocab_size = 4
-        all_x_onehot = F.one_hot(raw_x, num_classes=vocab_size).float()
-        
-        # 3. 展平 (N, 32) -> 这才是 Proxy 能吃的格式
-        all_x = all_x_onehot.view(all_x_onehot.shape[0], -1)
+        # 1. 拿原始数据
+        raw_x = task.x
+        # 2. 转 Logits
+        all_x_logits = task.to_logits(raw_x)
+        all_x_logits = all_x_logits.reshape(all_x_logits.shape[0], -1)
+        all_x = torch.tensor(all_x_logits, dtype=torch.float32).to(cfg.DEVICE)
     else:
-        # 连续任务直接用
         all_x = torch.tensor(task.x, dtype=torch.float32).to(cfg.DEVICE)
         if all_x.dim() > 2: all_x = all_x.view(all_x.shape[0], -1)
+
+    # 3. !!! 关键：应用同样的标准化 !!!
+    all_x = (all_x - mean_x) / std_x
 
     all_y = torch.tensor(task.y, dtype=torch.float32).to(cfg.DEVICE).view(-1, 1)
     
@@ -118,11 +124,16 @@ def main():
     
     # 后处理与打分
     if task.is_discrete:
-        vocab_size = 4
-        seq_len = x_optimized_continuous.shape[1] // vocab_size
+        # === 核心修改：反标准化 (Denormalize) ===
+        # 先恢复成原始的 Logits 分布，再做 Argmax
+        x_denorm = x_optimized_continuous * std_x + mean_x
         
-        # 还原形状 (B, 8, 4)
-        x_opt_reshaped = x_optimized_continuous.view(cfg.NUM_SAMPLES, seq_len, vocab_size)
+        # 动态推断 vocab/seq_len，避免与 logits 维度不符
+        seq_len = seq_len
+        vocab_size = x_denorm.shape[1] // seq_len
+        
+        # 还原形状
+        x_opt_reshaped = x_denorm.view(cfg.NUM_SAMPLES, seq_len, vocab_size)
         
         # Argmax 转回索引
         x_opt_indices = torch.argmax(x_opt_reshaped, dim=2).cpu().numpy()
@@ -130,21 +141,30 @@ def main():
         # 预测
         final_scores = task.predict(x_opt_indices)
     else:
-        final_scores = task.predict(x_optimized_continuous.cpu().numpy())
+        # 连续任务也要反标准化
+        x_denorm = x_optimized_continuous * std_x + mean_x
+        final_scores = task.predict(x_denorm.cpu().numpy())
     
     # 结果展示
     print("-" * 30)
     print(f"Optimization Results (Top {cfg.NUM_SAMPLES} worst samples optimized):")
     print(f"Original Score Mean: {original_y.mean().item():.4f}")
     
-    if np.isneginf(final_scores).any():
-        print("Warning: Still found -inf in scores! (Check data validity)")
+    final_scores_flat = np.asarray(final_scores).reshape(-1)
+    finite_mask = np.isfinite(final_scores_flat)
+    num_bad = final_scores_flat.shape[0] - finite_mask.sum()
+    if num_bad > 0:
+        print(f"Warning: found {num_bad} non-finite scores (inf/-inf/nan); excluded from stats.")
+    valid_scores = final_scores_flat[finite_mask]
+    
+    if valid_scores.size == 0:
+        print("No valid scores to summarize.")
     else:
-        print(f"Optimized Score Mean: {final_scores.mean():.4f}")
-        print(f"Optimized Score Max:  {final_scores.max():.4f}")
+        print(f"Optimized Score Mean (valid only): {valid_scores.mean():.4f}")
+        print(f"Optimized Score Max (valid only):  {valid_scores.max():.4f}")
         
         # 按得分升序排序后取 50% / 80% / 100% 位置（1-based 排名）
-        sorted_scores = np.sort(np.asarray(final_scores).reshape(-1))  # 小 -> 大
+        sorted_scores = np.sort(valid_scores)  # 小 -> 大
         total = sorted_scores.shape[0]
         def pick_rank_fraction(f):
             idx = max(0, min(total - 1, int(np.ceil(f * total) - 1)))
@@ -154,10 +174,10 @@ def main():
         p50 = to_scalar(pick_rank_fraction(0.50))
         p80 = to_scalar(pick_rank_fraction(0.80))
         p100 = to_scalar(pick_rank_fraction(1.00))  # 最后一个
-        print(f"Percentile Scores (50th / 80th / 100th, asc): {p50:.4f} | {p80:.4f} | {p100:.4f}")
+        print(f"Percentile Scores (50th / 80th / 100th, asc, valid only): {p50:.4f} | {p80:.4f} | {p100:.4f}")
         
-        improvement = final_scores.mean() - original_y.mean().item()
-        print(f"Average Improvement:  {improvement:.4f}")
+        improvement = valid_scores.mean() - original_y.mean().item()
+        print(f"Average Improvement (valid only):  {improvement:.4f}")
     print("-" * 30)
 
 def seed_everything(seed=42):
