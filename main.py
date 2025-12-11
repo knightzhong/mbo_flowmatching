@@ -96,15 +96,16 @@ def main():
     # Part C: 评估 (Evaluation + Guidance)
     # ==========================================
     print("\nRunning Evaluation with Guidance...")
-    # 与 ROOT 一致：从整个离线数据集中采样（type='highest'）
-    # 实现与 ROOT 的 sampling_from_offline_data 函数一致
+    # 回退到与训练数据一致的策略：从最低分开始优化
+    # 训练时学习的是 bottom 50% -> top 50%，所以测试时也应该从低分开始
+    # 这样可以保证训练和测试的一致性，避免模型从未见过的映射导致失败
     y_sorted_indices = torch.argsort(offline_y)
     x_sorted = offline_x[y_sorted_indices]
     y_sorted = offline_y[y_sorted_indices]
     
-    # 从最高分的样本中采样（与 ROOT 的 type='highest' 一致）
-    x_start = x_sorted[-cfg.NUM_SAMPLES:].to(cfg.DEVICE)
-    original_y = y_sorted[-cfg.NUM_SAMPLES:]
+    # 从最低分的样本中采样（与训练数据一致）
+    x_start = x_sorted[:cfg.NUM_SAMPLES].to(cfg.DEVICE)
+    original_y = y_sorted[:cfg.NUM_SAMPLES]
     # 选取分数排序最低的 50% 中最高的 N 个样本作为起始点
     # bottom_half_k = max(1, test_scores.shape[0] // 2)
     # bottom_half_indices = torch.topk(test_scores, k=bottom_half_k, largest=False).indices
@@ -134,18 +135,15 @@ def main():
     oracle_y_min = task_to_min.get(cfg.TASK_NAME, 0.0)
     oracle_y_max = task_to_max.get(cfg.TASK_NAME, 1.0)
     
-    # 归一化 oracle_y_max（与 ROOT 一致）
+    # 归一化 oracle_y_max（与 ROOT 完全一致，不做任何调整）
     # 使用之前保存的原始值（未标准化的统计量）
     normalized_oracle_y_max = (oracle_y_max - mean_y_orig) / std_y_orig
     
-    # 使用 alpha 系数（ROOT 中使用 0.8，而不是 1.0！）
+    # 使用 alpha 系数（ROOT 中使用 0.8）
     alpha = 0.8  # 与 ROOT 一致
     target_score = normalized_oracle_y_max * alpha
     
-    # 限制目标分数到合理范围（避免过大的目标导致优化失败）
-    # 如果目标分数超过 5 个标准差，限制为 5（仍然很高，但更现实）
-    target_score = min(target_score, 5.0)
-    
+    # 直接使用 ROOT 的方式，不做任何调整
     y_target_norm = torch.full((cfg.NUM_SAMPLES, 1), target_score, device=cfg.DEVICE)
     
     print(f"Oracle Y Range: [{oracle_y_min}, {oracle_y_max}]")

@@ -255,21 +255,22 @@ def build_paired_dataloader(config, proxy=None):
     else:
         std_y = torch.tensor(float(std_y), dtype=torch.float32)
     
-    # 1. Target: Top 50%
+    # 回退到简单稳定的策略：只使用 Bottom 50% -> Top 50% 的映射
+    # 混合多种映射可能导致模型学习混乱，先保证基本功能正常
     high_threshold = torch.quantile(y_norm, 0.5)
     high_mask = y_norm >= high_threshold
     x_high = x_norm[high_mask]
     y_high = y_norm[high_mask]
     
-    # 2. Source: Bottom 50%
     low_mask = y_norm < high_threshold
     x_low = x_norm[low_mask]
+    y_low = y_norm[low_mask]
     
     print(f"Strategy: Optimize Bottom 50% -> Top 50%")
     print(f"Pools: Source={len(x_low)}, Target={len(x_high)}")
     
     # 配对（现在返回 y_low）
-    x_src, x_tgt, y_target, y_source = semantic_pairing(x_low, x_high, y_high, y_norm[low_mask], k=config.TOP_K_NEIGHBORS)
+    x_src, x_tgt, y_target, y_source = semantic_pairing(x_low, x_high, y_high, y_low, k=config.TOP_K_NEIGHBORS)
     
     dataset = TensorDataset(x_src, x_tgt, y_target, y_source)
     loader = DataLoader(dataset, batch_size=config.BATCH_SIZE, shuffle=True)
