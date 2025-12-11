@@ -91,112 +91,69 @@ def main():
         if (epoch + 1) % 10 == 0:
             avg_loss = total_loss / len(train_loader)
             print(f"Flow Epoch {epoch+1}/{cfg.EPOCHS} | Loss: {avg_loss:.6f}")
-            
-    # ==========================================
-    # Part C: 评估 (Evaluation + Guidance)
-    # ==========================================
-    print("\nRunning Evaluation with Guidance...")
-    # 回退到与训练数据一致的策略：从最低分开始优化
-    # 训练时学习的是 bottom 50% -> top 50%，所以测试时也应该从低分开始
-    # 这样可以保证训练和测试的一致性，避免模型从未见过的映射导致失败
-    y_sorted_indices = torch.argsort(offline_y)
-    x_sorted = offline_x[y_sorted_indices]
-    y_sorted = offline_y[y_sorted_indices]
-    
-    # 从最低分的样本中采样（与训练数据一致）
-    x_start = x_sorted[:cfg.NUM_SAMPLES].to(cfg.DEVICE)
-    original_y = y_sorted[:cfg.NUM_SAMPLES]
-    # 选取分数排序最低的 50% 中最高的 N 个样本作为起始点
-    # bottom_half_k = max(1, test_scores.shape[0] // 2)
-    # bottom_half_indices = torch.topk(test_scores, k=bottom_half_k, largest=False).indices
-    # bottom_half_scores = test_scores[bottom_half_indices]
-    # select_k = min(cfg.NUM_SAMPLES, bottom_half_scores.shape[0])
-    # top_in_bottom = torch.topk(bottom_half_scores, k=select_k, largest=True).indices
-    # best_indices = bottom_half_indices[top_in_bottom]
-    # x_start = test_candidates[best_indices]
-    # original_y = test_scores[best_indices]
     
     # 定义引导函数
     def guidance_func(x):
         return proxy(x)
+    # ==========================================
+    # Part C: 评估 (Evaluation + Guidance)
+    # ==========================================
+    print("\nRunning Evaluation with Guidance...")
     
-    # === 调参区域 ===
-    # 试着改这个值：1.0, 10.0, 50.0
-    GUIDANCE_SCALE = 0.0 
-    print(f"Using Guidance Scale: {GUIDANCE_SCALE}")
+    # 1. 准备起始数据 (Bottom 样本)
+    y_sorted_indices = torch.argsort(offline_y)
+    x_start = offline_x[y_sorted_indices][:cfg.NUM_SAMPLES].to(cfg.DEVICE)
+    original_y = offline_y[y_sorted_indices][:cfg.NUM_SAMPLES]
     
-    # === 修改2：基于 oracle 范围设置目标分数（与 ROOT 一致）===
-    # 定义任务的最小/最大值（与 ROOT 一致）
-    task_to_min = {'TFBind8-Exact-v0': 0.0, 'TFBind10-Exact-v0': -1.8585268, 
-                   'AntMorphology-Exact-v0': -386.90036, 'DKittyMorphology-Exact-v0': -880.4585}
-    task_to_max = {'TFBind8-Exact-v0': 1.0, 'TFBind10-Exact-v0': 2.1287067, 
-                   'AntMorphology-Exact-v0': 590.24445, 'DKittyMorphology-Exact-v0': 340.90985}
+    # 2. 设定目标分数 (Target Score)
+    # 因为 y 已经归一化了，所以 target=max(y_train) 是一个安全且强力的目标
+    # 计算训练集中见过的最大归一化分数
+    max_train_y_norm = offline_y.max().item()
     
-    oracle_y_min = task_to_min.get(cfg.TASK_NAME, 0.0)
-    oracle_y_max = task_to_max.get(cfg.TASK_NAME, 1.0)
+    # 策略：稍微推高一点点 (1.1倍)，引导模型向更优处探索
+    # 对于 TFBind8，这通常在 2.5 ~ 3.0 之间
+    TARGET_SIGMA = max_train_y_norm * 2.0
     
-    # 归一化 oracle_y_max（与 ROOT 一致）
-    # 使用之前保存的原始值（未标准化的统计量）
-    normalized_oracle_y_max = (oracle_y_max - mean_y_orig) / std_y_orig
+    y_target_norm = torch.full((cfg.NUM_SAMPLES, 1), TARGET_SIGMA, device=cfg.DEVICE)
+    y_low_start = original_y.view(-1, 1).to(cfg.DEVICE)
     
-    # 使用 alpha 系数（ROOT 中使用 0.8，而不是 1.0！）
-    alpha = 1.0  # 与 ROOT 一致
-    target_score = normalized_oracle_y_max * alpha
+    print(f"Max Training Sigma: {max_train_y_norm:.4f}")
+    print(f"Conditioning on Target Score: {TARGET_SIGMA:.4f}")
     
-    # 关键修复：根据起始分数调整目标分数，使其更合理
-    # 如果起始分数很低（bottom 50%），目标应该是 top 50% 的中位数，而不是 oracle_max
-    # 这样可以避免目标过高导致优化失败
-    start_score_mean = original_y.mean().item()
-    top50_median = torch.quantile(offline_y, 0.75).item()  # top 50% 的中位数（75th percentile）
-    
-    # 如果目标分数太高（超过起始分数 3 个标准差以上），则使用更保守的目标
-    if target_score - start_score_mean > 3.0:
-        # 使用 top 50% 的中位数作为目标（更现实）
-        target_score = min(target_score, top50_median + 1.0)  # 允许一些提升空间
-        print(f"Target score adjusted: {target_score:.4f} (original: {normalized_oracle_y_max * alpha:.4f})")
-    
-    y_target_norm = torch.full((cfg.NUM_SAMPLES, 1), target_score, device=cfg.DEVICE)
-    
-    print(f"Oracle Y Range: [{oracle_y_min}, {oracle_y_max}]")
-    print(f"Original Y Mean: {mean_y_orig:.4f}, Std: {std_y_orig:.4f}")
-    print(f"Normalized Oracle Y Max: {normalized_oracle_y_max:.4f}")
-    print(f"Target Score (normalized, alpha={alpha}): {target_score:.4f}")
-    
-    # 获取起始点的 y_low（低价值分数）
-    y_low_start = original_y.view(-1, 1).to(cfg.DEVICE)  # (NUM_SAMPLES, 1)
-    
-    # 采样（现在传入 y_high 和 y_low）
+    # 3. 采样
     x_optimized_continuous = cfm.sample(
         x_start, 
-        y_high=y_target_norm,  # 目标分数（高价值）
-        y_low=y_low_start,  # 起始分数（低价值）
+        y_high=y_target_norm, 
+        y_low=y_low_start,
         steps=cfg.ODE_STEPS,
         guidance_fn=guidance_func,
-        guidance_scale=GUIDANCE_SCALE
+        guidance_scale=0.0 # 先设为0，验证纯 Flow 能力
     )
     
-    # ==========================================
-    # 后处理：与 ROOT 保持一致
-    # ==========================================
-    # 1. 反标准化（与 ROOT 一致）
+    # 4. 后处理与解码 (关键修改！)
+    # 反标准化
     x_denorm = x_optimized_continuous * std_x + mean_x
     
-    # 2. 移动到 CPU 并转换为 numpy
-    x_denorm = x_denorm.cpu().numpy()
-    
-    # 3. 如果是离散任务，需要 reshape 并调用 task.map_to_logits()
     if task.is_discrete:
-        # 调用 map_to_logits（与 ROOT 一致）
-        task.map_to_logits()
+        # === 关键：手动解码 4 维 One-Hot ===
+        # 此时 x_denorm 是 (N, 32)
+        # 我们知道 TFBind8 是 8 个位置，每个位置 4 种可能
+        vocab_size = 4
+        seq_len = x_denorm.shape[1] // vocab_size # 应该是 8
         
-        # Reshape 为 (N, seq_len, vocab_size) 格式（与 ROOT 一致）
-        denormalize_high_candidates = x_denorm.reshape(x_denorm.shape[0], task.x.shape[1], task.x.shape[2])
+        # Reshape 回 (N, 8, 4)
+        x_reshaped = x_denorm.view(x_denorm.shape[0], seq_len, vocab_size)
+        print('x_reshaped.shape') 
+        print(x_reshaped.shape) 
+        # Argmax: 找出每个位置概率最大的碱基索引 (0-3)
+        # 这就是这一方案最稳的地方：哪怕数值有噪声，最大值通常是对的
+        x_opt_indices = torch.argmax(x_reshaped, dim=2).cpu().numpy()
         
-        # task.predict() 会自动处理 logits 到离散索引的转换
-        final_scores = task.predict(denormalize_high_candidates)
+        # 直接把离散索引喂给 task.predict
+        # 注意：不要调用 task.map_to_logits()，因为我们给的是 indices
+        final_scores = task.predict(x_opt_indices)
     else:
-        # 连续任务直接 predict
-        final_scores = task.predict(x_denorm)
+        final_scores = task.predict(x_denorm.cpu().numpy())
     
     # ==========================================
     # 结果评估：与 ROOT 一致（归一化百分位数分数）
@@ -214,6 +171,15 @@ def main():
         return
     
     # 2. 归一化分数（与 ROOT 一致）：(score - oracle_y_min) / (oracle_y_max - oracle_y_min)
+    # oracle_y_min = offline_y.min().item()
+    # oracle_y_max = offline_y.max().item() 
+    # 使用 ROOT 中写死的 oracle 上下界，避免受当前 run 的 offline_y 范围影响
+    task_to_min = {'TFBind8-Exact-v0': 0.0, 'TFBind10-Exact-v0': -1.8585268,
+                   'AntMorphology-Exact-v0': -386.90036, 'DKittyMorphology-Exact-v0': -880.4585}
+    task_to_max = {'TFBind8-Exact-v0': 1.0, 'TFBind10-Exact-v0': 2.1287067,
+                   'AntMorphology-Exact-v0': 590.24445, 'DKittyMorphology-Exact-v0': 340.90985}
+    oracle_y_min = task_to_min.get(cfg.TASK_NAME, offline_y.min().item())
+    oracle_y_max = task_to_max.get(cfg.TASK_NAME, offline_y.max().item())
     normalized_scores = (valid_scores - oracle_y_min) / (oracle_y_max - oracle_y_min)
     
     # 3. 计算百分位数（与 ROOT 一致）

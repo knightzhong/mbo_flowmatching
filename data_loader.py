@@ -5,50 +5,60 @@ from torch.utils.data import TensorDataset, DataLoader
 import torch.nn.functional as F
 def get_design_bench_data(task_name):
     """
-    与 ROOT 保持一致的数据加载方式：
-    1. 使用 task.to_logits() 转换离散数据
-    2. 计算 mean/std（numpy）
-    3. 返回 numpy 数组（标准化在外部进行）
+    最佳实践：4维 One-Hot + 去量化噪声 + Z-Score 标准化
     """
     print(f"Loading task: {task_name}...")
     if task_name != 'TFBind10-Exact-v0':
         task = design_bench.make(task_name)
     else:
-        task = design_bench.make(task_name,
-                                dataset_kwargs={"max_samples": 10000})
+        task = design_bench.make(task_name, dataset_kwargs={"max_samples": 10000})
     
-    offline_x = task.x
-    # 使用 ROOT 的方式：task.to_logits() 转换离散数据
+    # === 1. 处理 X (输入) ===
     if task.is_discrete:
-        offline_x = task.to_logits(offline_x).reshape(offline_x.shape[0], -1)
+        # 获取原始离散索引 (N, 8)
+        raw_x = task.x
+        # 确保形状是 (N, L)
+        if raw_x.ndim == 3: raw_x = raw_x.squeeze(-1)
+        
+        # 转为 Tensor
+        x_indices = torch.tensor(raw_x, dtype=torch.long)
+        
+        # 强制转为 4 维 One-Hot (N, 8, 4)
+        # 这一步保证了信息的完整性，不会像 Logits 那样丢一维
+        vocab_size = 4
+        x_onehot = F.one_hot(x_indices, num_classes=vocab_size).float()
+        
+        # === 关键步骤：去量化 (Dequantization) ===
+        # 加入微小的正态噪声，将离散的 0/1 变成连续值
+        # 0.05 是经验值，既能让数据连续，又不至于让模型分不清类别
+        noise = 0.05 * torch.randn_like(x_onehot)
+        x_continuous = x_onehot + noise
+        
+        # 展平为 (N, 32) -> 这就是模型要处理的连续向量
+        offline_x = x_continuous.view(x_continuous.shape[0], -1).numpy()
+    else:
+        # 连续任务保持原样
+        offline_x = task.x
     
-    # 计算 mean 和 std（使用 numpy，与 ROOT 一致）
+    # === 2. 计算统计量 (用于 Z-Score) ===
     mean_x = np.mean(offline_x, axis=0)
     std_x = np.std(offline_x, axis=0)
-    std_x = np.where(std_x == 0, 1.0, std_x)  # 防除零
+    std_x = np.where(std_x < 1e-6, 1.0, std_x) # 防除零
     
-    offline_y = task.y
-    # 确保 offline_y 是 1D 数组
-    offline_y = offline_y.reshape(-1)
+    # 执行标准化: N(0, 1)
+    offline_x_norm = (offline_x - mean_x) / std_x
     
-    # 计算原始的 mean 和 std（未标准化前，与 ROOT 一致）
+    # === 3. 处理 Y (分数) ===
+    offline_y = task.y.reshape(-1)
     mean_y = np.mean(offline_y)
     std_y = np.std(offline_y)
-    if std_y == 0:
-        std_y = 1.0
+    if std_y == 0: std_y = 1.0
     
-    # 打乱数据（与 ROOT 一致）
-    shuffle_idx = np.random.permutation(offline_x.shape[0])
-    offline_x = offline_x[shuffle_idx]
-    offline_y = offline_y[shuffle_idx]
-    
-    # 标准化（与 ROOT 一致）
-    offline_x_norm = (offline_x - mean_x) / std_x
+    # 归一化 Y
     offline_y_norm = (offline_y - mean_y) / std_y
     
-    print(f"Data Processed. X_dim={offline_x_norm.shape[1]}. Y_norm Mean={offline_y_norm.mean():.2f}, Std={offline_y_norm.std():.2f}")
+    print(f"Data Processed (One-Hot+Noise). X_dim={offline_x_norm.shape[1]}. Y_norm Mean={offline_y_norm.mean():.2f}, Std={offline_y_norm.std():.2f}")
     
-    # 返回 numpy 数组（与 ROOT 一致）
     return task, offline_x_norm, offline_y_norm, mean_x, std_x, mean_y, std_y
 # def get_design_bench_data(task_name):
 #     """加载原始数据 (强制 4-Channel One-Hot)"""
@@ -258,7 +268,7 @@ def build_paired_dataloader(config, proxy=None):
     # 回退到简单稳定的策略：只使用 Bottom 50% -> Top 50% 的映射
     # 混合多种映射可能导致模型学习混乱，先保证基本功能正常
     low_threshold = torch.quantile(y_norm, 0.5)
-    high_threshold = torch.quantile(y_norm, 0.95)
+    high_threshold = torch.quantile(y_norm, 0.8)
     high_mask = y_norm >= high_threshold
     x_high = x_norm[high_mask]
     y_high = y_norm[high_mask]
