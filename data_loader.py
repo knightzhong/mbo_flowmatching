@@ -257,12 +257,13 @@ def build_paired_dataloader(config, proxy=None):
     
     # 回退到简单稳定的策略：只使用 Bottom 50% -> Top 50% 的映射
     # 混合多种映射可能导致模型学习混乱，先保证基本功能正常
-    high_threshold = torch.quantile(y_norm, 0.5)
+    low_threshold = torch.quantile(y_norm, 0.5)
+    high_threshold = torch.quantile(y_norm, 0.95)
     high_mask = y_norm >= high_threshold
     x_high = x_norm[high_mask]
     y_high = y_norm[high_mask]
     
-    low_mask = y_norm < high_threshold
+    low_mask = y_norm < low_threshold
     x_low = x_norm[low_mask]
     y_low = y_norm[low_mask]
     
