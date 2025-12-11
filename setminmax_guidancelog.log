@@ -31,15 +31,16 @@ Flow Epoch 100/100 | Loss: 0.276272
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.5651
+Optimized Score Mean (valid only): 0.5549
 Optimized Score Max (valid only):  0.8735
-Normalized Percentile Scores (100th / 80th / 50th): 0.8735 | 0.6541 | 0.5728
-Average Improvement (valid only):  3.8271
+Normalized Percentile Scores (100th / 80th / 50th): 0.8735 | 0.6576 | 0.5454
+Average Improvement (valid only):  3.8169
 ------------------------------
 Seed: 0 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
@@ -74,15 +75,16 @@ Flow Epoch 100/100 | Loss: 0.277517
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.4619
+Optimized Score Mean (valid only): 0.4651
 Optimized Score Max (valid only):  0.6494
-Normalized Percentile Scores (100th / 80th / 50th): 0.6494 | 0.5128 | 0.4393
-Average Improvement (valid only):  3.7239
+Normalized Percentile Scores (100th / 80th / 50th): 0.6494 | 0.5128 | 0.4484
+Average Improvement (valid only):  3.7272
 ------------------------------
 Seed: 1 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
@@ -117,15 +119,16 @@ Flow Epoch 100/100 | Loss: 0.287005
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.4503
+Optimized Score Mean (valid only): 0.4395
 Optimized Score Max (valid only):  0.8546
-Normalized Percentile Scores (100th / 80th / 50th): 0.8546 | 0.5245 | 0.4392
-Average Improvement (valid only):  3.7123
+Normalized Percentile Scores (100th / 80th / 50th): 0.8546 | 0.4803 | 0.4392
+Average Improvement (valid only):  3.7016
 ------------------------------
 Seed: 2 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
@@ -160,15 +163,16 @@ Flow Epoch 100/100 | Loss: 0.280080
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.2663
+Optimized Score Mean (valid only): 0.2720
 Optimized Score Max (valid only):  0.4391
 Normalized Percentile Scores (100th / 80th / 50th): 0.4391 | 0.2950 | 0.2950
-Average Improvement (valid only):  3.5284
+Average Improvement (valid only):  3.5340
 ------------------------------
 Seed: 3 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
@@ -203,15 +207,16 @@ Flow Epoch 100/100 | Loss: 0.284126
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.5108
+Optimized Score Mean (valid only): 0.5160
 Optimized Score Max (valid only):  0.8420
-Normalized Percentile Scores (100th / 80th / 50th): 0.8420 | 0.6240 | 0.4867
-Average Improvement (valid only):  3.7729
+Normalized Percentile Scores (100th / 80th / 50th): 0.8420 | 0.6276 | 0.5064
+Average Improvement (valid only):  3.7780
 ------------------------------
 Seed: 4 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
@@ -246,15 +251,16 @@ Flow Epoch 100/100 | Loss: 0.269684
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.3542
+Optimized Score Mean (valid only): 0.3504
 Optimized Score Max (valid only):  0.5800
-Normalized Percentile Scores (100th / 80th / 50th): 0.5800 | 0.3893 | 0.3596
-Average Improvement (valid only):  3.6163
+Normalized Percentile Scores (100th / 80th / 50th): 0.5800 | 0.3850 | 0.3550
+Average Improvement (valid only):  3.6125
 ------------------------------
 Seed: 5 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
@@ -289,15 +295,16 @@ Flow Epoch 100/100 | Loss: 0.288020
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.3790
+Optimized Score Mean (valid only): 0.3703
 Optimized Score Max (valid only):  0.8911
-Normalized Percentile Scores (100th / 80th / 50th): 0.8911 | 0.5070 | 0.3281
-Average Improvement (valid only):  3.6410
+Normalized Percentile Scores (100th / 80th / 50th): 0.8911 | 0.5018 | 0.3215
+Average Improvement (valid only):  3.6323
 ------------------------------
 Seed: 6 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
@@ -332,14 +339,15 @@ Flow Epoch 100/100 | Loss: 0.278326
 Running Evaluation with Guidance...
 Max Training Sigma: 1.4803
 Conditioning on Target Score: 1.6283
+iteration, guidance_scale 0 1.0
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.5277
+Optimized Score Mean (valid only): 0.5116
 Optimized Score Max (valid only):  0.8883
 Normalized Percentile Scores (100th / 80th / 50th): 0.8883 | 0.6623 | 0.4512
-Average Improvement (valid only):  3.7898
+Average Improvement (valid only):  3.7737
 ------------------------------
 Seed: 7 completed

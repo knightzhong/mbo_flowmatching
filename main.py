@@ -46,22 +46,14 @@ def main():
     proxy = ScoreProxy(input_dim=input_dim).to(cfg.DEVICE)
     proxy_opt = torch.optim.Adam(proxy.parameters(), lr=1e-3)
     
-    # 使用与 Flow Model 完全一致的数据处理（已经标准化）
-    # 从 train_loader 中获取所有数据用于训练 proxy
-    all_x_list = []
-    all_y_list = []
-    for x0, x1, y_high, y_low in train_loader:  # 现在接收 y_high 和 y_low
-        all_x_list.append(x0)
-        all_x_list.append(x1)
-        all_y_list.append(y_high)  # 使用 y_high 作为目标
-        all_y_list.append(y_high)
-    all_x = torch.cat(all_x_list, dim=0).to(cfg.DEVICE)
-    all_y = torch.cat(all_y_list, dim=0).to(cfg.DEVICE).view(-1, 1)
+    # 直接用全量 offline 数据训练 proxy，避免成对采样导致的重复
+    all_x = offline_x.to(cfg.DEVICE)
+    all_y = offline_y.to(cfg.DEVICE).view(-1, 1)
     
     print(f"Proxy Training Data Shape: {all_x.shape}") # 确认是 [32898, 32]
 
     # 简单的训练循环 (50 epochs 足够了)
-    for i in range(50):
+    for i in range(200):
         proxy_opt.zero_grad()
         pred_y = proxy(all_x)
         loss = nn.MSELoss()(pred_y, all_y)
@@ -112,7 +104,7 @@ def main():
     
     # 策略：稍微推高一点点 (1.1倍)，引导模型向更优处探索
     # 对于 TFBind8，这通常在 2.5 ~ 3.0 之间
-    TARGET_SIGMA = max_train_y_norm * 2.0
+    TARGET_SIGMA = max_train_y_norm * 1.1
     
     y_target_norm = torch.full((cfg.NUM_SAMPLES, 1), TARGET_SIGMA, device=cfg.DEVICE)
     y_low_start = original_y.view(-1, 1).to(cfg.DEVICE)
@@ -127,7 +119,7 @@ def main():
         y_low=y_low_start,
         steps=cfg.ODE_STEPS,
         guidance_fn=guidance_func,
-        guidance_scale=0.0 # 先设为0，验证纯 Flow 能力
+        guidance_scale=20.0 # 先设为0，验证纯 Flow 能力
     )
     
     # 4. 后处理与解码 (关键修改！)
@@ -197,6 +189,9 @@ def main():
     print(f"Average Improvement (valid only):  {improvement:.4f}")
     print("-" * 30)
 
+    # 返回当前 seed 的百分位结果，便于多 seed 汇总
+    return percentiles
+
 def seed_everything(seed=42):
     import random
     import os
@@ -212,7 +207,23 @@ def seed_everything(seed=42):
     torch.backends.cudnn.benchmark = False
 
 if __name__ == "__main__":
+    all_percentiles = []
     for seed in range(8):
         seed_everything(seed)
-        main()
+        perc = main()
+        if perc is not None:
+            all_percentiles.append(perc)
         print(f"Seed: {seed} completed")
+
+    if len(all_percentiles) > 0:
+        all_percentiles = np.vstack(all_percentiles)  # shape (n_seed, 3)
+        mean_percentiles = all_percentiles.mean(axis=0)
+        std_percentiles = all_percentiles.std(axis=0)
+        print("=" * 30)
+        print("Average Normalized Percentile Scores across seeds (100th / 80th / 50th): "
+              f"{mean_percentiles[0]:.4f} | {mean_percentiles[1]:.4f} | {mean_percentiles[2]:.4f}")
+        print("Std of Normalized Percentile Scores across seeds (100th / 80th / 50th): "
+              f"{std_percentiles[0]:.4f} | {std_percentiles[1]:.4f} | {std_percentiles[2]:.4f}")
+        print("=" * 30)
+    else:
+        print("No percentile results collected across seeds.")
