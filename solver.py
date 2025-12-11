@@ -108,12 +108,12 @@ class ConditionalFlowMatching:
                     grad = torch.autograd.grad(score.sum(), x_in)[0]
                 
                 # === 梯度归一化 (保持不变) ===
-                v_norm = torch.norm(v, dim=1, keepdim=True) + 1e-8
-                grad_norm = torch.norm(grad, dim=1, keepdim=True) + 1e-8
-                scaled_grad = (grad / grad_norm) * v_norm
+                # v_norm = torch.norm(v, dim=1, keepdim=True) + 1e-8
+                # grad_norm = torch.norm(grad, dim=1, keepdim=True) + 1e-8
+                # scaled_grad = (grad / grad_norm) * v_norm
                 
                 # 更新速度
-                v = v + scaled_grad * guidance_scale
+                v = v + grad * guidance_scale
 
             x_current = x_current + v * dt
             
