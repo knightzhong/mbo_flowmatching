@@ -13,8 +13,14 @@ class VectorFieldNet(nn.Module):
             nn.Linear(hidden_dim, hidden_dim)
         )
         
-        # === 新增：分数嵌入 ===
-        self.y_mlp = nn.Sequential(
+        # === 修改：使用 y_high 和 y_low（与 ROOT 一致）===
+        self.y_high_mlp = nn.Sequential(
+            nn.Linear(1, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, hidden_dim)
+        )
+        
+        self.y_low_mlp = nn.Sequential(
             nn.Linear(1, hidden_dim),
             nn.SiLU(),
             nn.Linear(hidden_dim, hidden_dim)
@@ -29,25 +35,27 @@ class VectorFieldNet(nn.Module):
         
         # 联合处理
         self.joint_mlp = nn.Sequential(
-            # 输入维度变为 3 * hidden_dim (x + t + y)
-            nn.Linear(hidden_dim * 3, hidden_dim),
+            # 输入维度变为 4 * hidden_dim (x + t + y_high + y_low)
+            nn.Linear(hidden_dim * 4, hidden_dim),
             nn.SiLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.SiLU(),
             nn.Linear(hidden_dim, input_dim)
         )
 
-    def forward(self, x, t, y): # 接收 y
+    def forward(self, x, t, y_high, y_low):  # 接收 y_high 和 y_low
         if x.dim() > 2: x = x.view(x.size(0), -1)
         if t.dim() == 1: t = t.view(-1, 1)
-        if y.dim() == 1: y = y.view(-1, 1) # 确保 y 是 (B, 1)
+        if y_high.dim() == 1: y_high = y_high.view(-1, 1)  # 确保 y_high 是 (B, 1)
+        if y_low.dim() == 1: y_low = y_low.view(-1, 1)  # 确保 y_low 是 (B, 1)
             
         t_emb = self.time_mlp(t)
         x_emb = self.x_mlp(x)
-        y_emb = self.y_mlp(y) # 处理 y
+        y_high_emb = self.y_high_mlp(y_high)  # 处理 y_high
+        y_low_emb = self.y_low_mlp(y_low)  # 处理 y_low
         
-        # 拼接 (Concat) 比相加更能保留条件信息
-        h = torch.cat([x_emb, t_emb, y_emb], dim=-1)
+        # 拼接 (Concat) 比相加更能保留条件信息（与 ROOT 一致）
+        h = torch.cat([x_emb, t_emb, y_high_emb, y_low_emb], dim=-1)
         v = self.joint_mlp(h)
         return v
 

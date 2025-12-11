@@ -5,38 +5,49 @@ class ConditionalFlowMatching:
         self.model = model.to(device)
         self.device = device
         
-    def compute_loss(self, x0, x1, y1): # 接收 target score y1
+    def compute_loss(self, x0, x1, y_high, y_low):  # 接收 y_high 和 y_low（与 ROOT 一致）
         """
-        x1: Target 样本
-        y1: Target 样本对应的分数 (真实分数)
+        x0: Source 样本（低价值）
+        x1: Target 样本（高价值）
+        y_high: Target 样本对应的分数（高价值分数）
+        y_low: Source 样本对应的分数（低价值分数）
         """
-        x0, x1, y1 = x0.to(self.device), x1.to(self.device), y1.to(self.device)
+        x0, x1 = x0.to(self.device), x1.to(self.device)
+        y_high = y_high.to(self.device)
+        y_low = y_low.to(self.device)
         B = x0.shape[0]
         
         t = torch.rand(B, 1, device=self.device)
         x_t = (1 - t) * x0 + t * x1
         u_t = x1 - x0
         
-        # 传入 y1 作为条件：告诉模型，沿着这个方向走，能得到 y1 的分数
-        v_pred = self.model(x_t, t, y1)
+        # 传入 y_high 和 y_low 作为条件（与 ROOT 一致）
+        v_pred = self.model(x_t, t, y_high, y_low)
         
         loss = torch.mean((v_pred - u_t) ** 2)
         return loss
 
     @torch.no_grad()
-    def sample(self, x_start, y_target, steps=100, guidance_fn=None, guidance_scale=1.0):
+    def sample(self, x_start, y_high, y_low, steps=100, guidance_fn=None, guidance_scale=1.0):
         """
-        y_target: 我们期望达到的目标分数 (B, 1)
+        x_start: 起始样本（低价值）
+        y_high: 目标分数（高价值分数）
+        y_low: 起始分数（低价值分数）
         """
         self.model.eval()
         x_current = x_start.clone().to(self.device)
         B = x_current.shape[0]
         
-        # 确保 y_target 维度正确
-        if isinstance(y_target, float):
-            y_in = torch.full((B, 1), y_target, device=self.device)
+        # 确保 y_high 和 y_low 维度正确
+        if isinstance(y_high, float):
+            y_high_in = torch.full((B, 1), y_high, device=self.device)
         else:
-            y_in = y_target.to(self.device)
+            y_high_in = y_high.to(self.device)
+            
+        if isinstance(y_low, float):
+            y_low_in = torch.full((B, 1), y_low, device=self.device)
+        else:
+            y_low_in = y_low.to(self.device)
 
         dt = 1.0 / steps
         
@@ -44,8 +55,8 @@ class ConditionalFlowMatching:
             t_val = i / steps
             t = torch.full((B, 1), t_val, device=self.device)
             
-            # 传入目标分数条件
-            v = self.model(x_current, t, y_in)
+            # 传入 y_high 和 y_low 作为条件（与 ROOT 一致）
+            v = self.model(x_current, t, y_high_in, y_low_in)
             
             # ... (guidance 逻辑保持不变，如果 scale=0 则不影响) ...
             if guidance_fn is not None and guidance_scale > 0:
