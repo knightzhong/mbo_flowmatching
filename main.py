@@ -50,17 +50,17 @@ def main():
     all_x = offline_x.to(cfg.DEVICE)
     all_y = offline_y.to(cfg.DEVICE).view(-1, 1)
     
-    print(f"Proxy Training Data Shape: {all_x.shape}") # 确认是 [32898, 32]
+    # print(f"Proxy Training Data Shape: {all_x.shape}") # 确认是 [32898, 32]
 
-    # 简单的训练循环 (50 epochs 足够了)
-    for i in range(200):
-        proxy_opt.zero_grad()
-        pred_y = proxy(all_x)
-        loss = nn.MSELoss()(pred_y, all_y)
-        loss.backward()
-        proxy_opt.step()
-        if (i + 1) % 10 == 0:
-            print(f"Proxy Epoch {i+1}/50 | Loss: {loss.item():.4f}")
+    # # 简单的训练循环 (50 epochs 足够了)
+    # for i in range(200):
+    #     proxy_opt.zero_grad()
+    #     pred_y = proxy(all_x)
+    #     loss = nn.MSELoss()(pred_y, all_y)
+    #     loss.backward()
+    #     proxy_opt.step()
+    #     if (i + 1) % 10 == 0:
+    #         print(f"Proxy Epoch {i+1}/50 | Loss: {loss.item():.4f}")
     
     # ==========================================
     # Part B: 训练 Flow Matching 模型
@@ -109,85 +109,87 @@ def main():
     y_target_norm = torch.full((cfg.NUM_SAMPLES, 1), TARGET_SIGMA, device=cfg.DEVICE)
     y_low_start = original_y.view(-1, 1).to(cfg.DEVICE)
     
-    print(f"Max Training Sigma: {max_train_y_norm:.4f}")
-    print(f"Conditioning on Target Score: {TARGET_SIGMA:.4f}")
+    # 评估部分
+    print("\nRunning Evaluation with CFG...")
+    test_scales = [1.0, 2.5, 4.0, 7.5] # CFG 的典型 Scale 比较小，通常 3.0 - 5.0 是最佳
+
+    for scale in test_scales:
+        print(f"\n>>> [CFG] Scale: {scale} <<<")
+        # 注意：不再需要 guidance_fn 参数
+        x_optimized = cfm.sample(
+            x_start, 
+            y_high=y_target_norm, 
+            y_low=y_low_start,
+            steps=cfg.ODE_STEPS,
+            guidance_scale=scale 
+        )
     
-    # 3. 采样
-    x_optimized_continuous = cfm.sample(
-        x_start, 
-        y_high=y_target_norm, 
-        y_low=y_low_start,
-        steps=cfg.ODE_STEPS,
-        guidance_fn=guidance_func,
-        guidance_scale=20.0 # 先设为0，验证纯 Flow 能力
-    )
-    
-    # 4. 后处理与解码 (关键修改！)
-    # 反标准化
-    x_denorm = x_optimized_continuous * std_x + mean_x
-    
-    if task.is_discrete:
-        # === 关键：手动解码 4 维 One-Hot ===
-        # 此时 x_denorm 是 (N, 32)
-        # 我们知道 TFBind8 是 8 个位置，每个位置 4 种可能
-        vocab_size = 4
-        seq_len = x_denorm.shape[1] // vocab_size # 应该是 8
+        # 4. 后处理与解码 (关键修改！)
+        # 反标准化
+        x_denorm = x_optimized * std_x + mean_x
         
-        # Reshape 回 (N, 8, 4)
-        x_reshaped = x_denorm.view(x_denorm.shape[0], seq_len, vocab_size)
-        print('x_reshaped.shape') 
-        print(x_reshaped.shape) 
-        # Argmax: 找出每个位置概率最大的碱基索引 (0-3)
-        # 这就是这一方案最稳的地方：哪怕数值有噪声，最大值通常是对的
-        x_opt_indices = torch.argmax(x_reshaped, dim=2).cpu().numpy()
+        if task.is_discrete:
+            # === 关键：手动解码 4 维 One-Hot ===
+            # 此时 x_denorm 是 (N, 32)
+            # 我们知道 TFBind8 是 8 个位置，每个位置 4 种可能
+            vocab_size = 4
+            seq_len = x_denorm.shape[1] // vocab_size # 应该是 8
+            
+            # Reshape 回 (N, 8, 4)
+            x_reshaped = x_denorm.view(x_denorm.shape[0], seq_len, vocab_size)
+            print('x_reshaped.shape') 
+            print(x_reshaped.shape) 
+            # Argmax: 找出每个位置概率最大的碱基索引 (0-3)
+            # 这就是这一方案最稳的地方：哪怕数值有噪声，最大值通常是对的
+            x_opt_indices = torch.argmax(x_reshaped, dim=2).cpu().numpy()
+            
+            # 直接把离散索引喂给 task.predict
+            # 注意：不要调用 task.map_to_logits()，因为我们给的是 indices
+            final_scores = task.predict(x_opt_indices)
+        else:
+            final_scores = task.predict(x_denorm.cpu().numpy())
         
-        # 直接把离散索引喂给 task.predict
-        # 注意：不要调用 task.map_to_logits()，因为我们给的是 indices
-        final_scores = task.predict(x_opt_indices)
-    else:
-        final_scores = task.predict(x_denorm.cpu().numpy())
-    
-    # ==========================================
-    # 结果评估：与 ROOT 一致（归一化百分位数分数）
-    # ==========================================
-    # 1. 计算归一化分数（与 ROOT 一致）
-    final_scores_flat = np.asarray(final_scores).reshape(-1)
-    finite_mask = np.isfinite(final_scores_flat)
-    num_bad = final_scores_flat.shape[0] - finite_mask.sum()
-    if num_bad > 0:
-        print(f"Warning: found {num_bad} non-finite scores (inf/-inf/nan); excluded from stats.")
-    valid_scores = final_scores_flat[finite_mask]
-    
-    if valid_scores.size == 0:
-        print("No valid scores to summarize.")
-        return
-    
-    # 2. 归一化分数（与 ROOT 一致）：(score - oracle_y_min) / (oracle_y_max - oracle_y_min)
-    # oracle_y_min = offline_y.min().item()
-    # oracle_y_max = offline_y.max().item() 
-    # 使用 ROOT 中写死的 oracle 上下界，避免受当前 run 的 offline_y 范围影响
-    task_to_min = {'TFBind8-Exact-v0': 0.0, 'TFBind10-Exact-v0': -1.8585268,
-                   'AntMorphology-Exact-v0': -386.90036, 'DKittyMorphology-Exact-v0': -880.4585}
-    task_to_max = {'TFBind8-Exact-v0': 1.0, 'TFBind10-Exact-v0': 2.1287067,
-                   'AntMorphology-Exact-v0': 590.24445, 'DKittyMorphology-Exact-v0': 340.90985}
-    oracle_y_min = task_to_min.get(cfg.TASK_NAME, offline_y.min().item())
-    oracle_y_max = task_to_max.get(cfg.TASK_NAME, offline_y.max().item())
-    normalized_scores = (valid_scores - oracle_y_min) / (oracle_y_max - oracle_y_min)
-    
-    # 3. 计算百分位数（与 ROOT 一致）
-    percentiles = np.percentile(normalized_scores, [100, 80, 50])  # 100th, 80th, 50th
-    
-    # 结果展示
-    print("-" * 30)
-    print(f"Optimization Results (Top {cfg.NUM_SAMPLES} samples optimized):")
-    print(f"Original Score Mean: {original_y.mean().item():.4f}")
-    print(f"Optimized Score Mean (valid only): {valid_scores.mean():.4f}")
-    print(f"Optimized Score Max (valid only):  {valid_scores.max():.4f}")
-    print(f"Normalized Percentile Scores (100th / 80th / 50th): {percentiles[0]:.4f} | {percentiles[1]:.4f} | {percentiles[2]:.4f}")
-    
-    improvement = valid_scores.mean() - original_y.mean().item()
-    print(f"Average Improvement (valid only):  {improvement:.4f}")
-    print("-" * 30)
+        # ==========================================
+        # 结果评估：与 ROOT 一致（归一化百分位数分数）
+        # ==========================================
+        # 1. 计算归一化分数（与 ROOT 一致）
+        final_scores_flat = np.asarray(final_scores).reshape(-1)
+        finite_mask = np.isfinite(final_scores_flat)
+        num_bad = final_scores_flat.shape[0] - finite_mask.sum()
+        if num_bad > 0:
+            print(f"Warning: found {num_bad} non-finite scores (inf/-inf/nan); excluded from stats.")
+        valid_scores = final_scores_flat[finite_mask]
+        
+        if valid_scores.size == 0:
+            print("No valid scores to summarize.")
+            return
+        
+        # 2. 归一化分数（与 ROOT 一致）：(score - oracle_y_min) / (oracle_y_max - oracle_y_min)
+        # oracle_y_min = offline_y.min().item()
+        # oracle_y_max = offline_y.max().item() 
+        # 使用 ROOT 中写死的 oracle 上下界，避免受当前 run 的 offline_y 范围影响
+        task_to_min = {'TFBind8-Exact-v0': 0.0, 'TFBind10-Exact-v0': -1.8585268,
+                    'AntMorphology-Exact-v0': -386.90036, 'DKittyMorphology-Exact-v0': -880.4585}
+        task_to_max = {'TFBind8-Exact-v0': 1.0, 'TFBind10-Exact-v0': 2.1287067,
+                    'AntMorphology-Exact-v0': 590.24445, 'DKittyMorphology-Exact-v0': 340.90985}
+        oracle_y_min = task_to_min.get(cfg.TASK_NAME, offline_y.min().item())
+        oracle_y_max = task_to_max.get(cfg.TASK_NAME, offline_y.max().item())
+        normalized_scores = (valid_scores - oracle_y_min) / (oracle_y_max - oracle_y_min)
+        
+        # 3. 计算百分位数（与 ROOT 一致）
+        percentiles = np.percentile(normalized_scores, [100, 80, 50])  # 100th, 80th, 50th
+        
+        # 结果展示
+        print("-" * 30)
+        print(f"Optimization Results (Top {cfg.NUM_SAMPLES} samples optimized):")
+        print(f"Original Score Mean: {original_y.mean().item():.4f}")
+        print(f"Optimized Score Mean (valid only): {valid_scores.mean():.4f}")
+        print(f"Optimized Score Max (valid only):  {valid_scores.max():.4f}")
+        print(f"Normalized Percentile Scores (100th / 80th / 50th): {percentiles[0]:.4f} | {percentiles[1]:.4f} | {percentiles[2]:.4f}")
+        
+        improvement = valid_scores.mean() - original_y.mean().item()
+        print(f"Average Improvement (valid only):  {improvement:.4f}")
+        print("-" * 30)
 
     # 返回当前 seed 的百分位结果，便于多 seed 汇总
     return percentiles

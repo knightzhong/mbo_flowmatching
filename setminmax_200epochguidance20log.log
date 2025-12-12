@@ -3,475 +3,603 @@ Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.8937
-Proxy Epoch 20/50 | Loss: 0.8667
-Proxy Epoch 30/50 | Loss: 0.8470
-Proxy Epoch 40/50 | Loss: 0.8280
-Proxy Epoch 50/50 | Loss: 0.8095
-Proxy Epoch 60/50 | Loss: 0.7938
-Proxy Epoch 70/50 | Loss: 0.7821
-Proxy Epoch 80/50 | Loss: 0.7726
-Proxy Epoch 90/50 | Loss: 0.7638
-Proxy Epoch 100/50 | Loss: 0.7551
-Proxy Epoch 110/50 | Loss: 0.7460
-Proxy Epoch 120/50 | Loss: 0.7365
-Proxy Epoch 130/50 | Loss: 0.7271
-Proxy Epoch 140/50 | Loss: 0.7190
-Proxy Epoch 150/50 | Loss: 0.7105
-Proxy Epoch 160/50 | Loss: 0.7029
-Proxy Epoch 170/50 | Loss: 0.6954
-Proxy Epoch 180/50 | Loss: 0.6877
-Proxy Epoch 190/50 | Loss: 0.6806
-Proxy Epoch 200/50 | Loss: 0.6751
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.513036
-Flow Epoch 20/100 | Loss: 0.423576
-Flow Epoch 30/100 | Loss: 0.385674
-Flow Epoch 40/100 | Loss: 0.358903
-Flow Epoch 50/100 | Loss: 0.340364
-Flow Epoch 60/100 | Loss: 0.323361
-Flow Epoch 70/100 | Loss: 0.309274
-Flow Epoch 80/100 | Loss: 0.298698
-Flow Epoch 90/100 | Loss: 0.289014
-Flow Epoch 100/100 | Loss: 0.279920
+Flow Epoch 10/100 | Loss: 0.447268
+Flow Epoch 20/100 | Loss: 0.367767
+Flow Epoch 30/100 | Loss: 0.324545
+Flow Epoch 40/100 | Loss: 0.293836
+Flow Epoch 50/100 | Loss: 0.269285
+Flow Epoch 60/100 | Loss: 0.248756
+Flow Epoch 70/100 | Loss: 0.232964
+Flow Epoch 80/100 | Loss: 0.222335
+Flow Epoch 90/100 | Loss: 0.211259
+Flow Epoch 100/100 | Loss: 0.203674
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.7090
-Optimized Score Max (valid only):  0.8591
-Normalized Percentile Scores (100th / 80th / 50th): 0.8591 | 0.8147 | 0.7233
-Average Improvement (valid only):  3.9711
+Optimized Score Mean (valid only): 0.2814
+Optimized Score Max (valid only):  0.6158
+Normalized Percentile Scores (100th / 80th / 50th): 0.6158 | 0.3668 | 0.2846
+Average Improvement (valid only):  3.5434
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.2442
+Optimized Score Max (valid only):  0.5837
+Normalized Percentile Scores (100th / 80th / 50th): 0.5837 | 0.3306 | 0.2077
+Average Improvement (valid only):  3.5063
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.2711
+Optimized Score Max (valid only):  0.5345
+Normalized Percentile Scores (100th / 80th / 50th): 0.5345 | 0.3388 | 0.2789
+Average Improvement (valid only):  3.5331
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3447
+Optimized Score Max (valid only):  0.6990
+Normalized Percentile Scores (100th / 80th / 50th): 0.6990 | 0.3569 | 0.3569
+Average Improvement (valid only):  3.6067
 ------------------------------
 Seed: 0 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.8921
-Proxy Epoch 20/50 | Loss: 0.8633
-Proxy Epoch 30/50 | Loss: 0.8395
-Proxy Epoch 40/50 | Loss: 0.8182
-Proxy Epoch 50/50 | Loss: 0.8007
-Proxy Epoch 60/50 | Loss: 0.7876
-Proxy Epoch 70/50 | Loss: 0.7770
-Proxy Epoch 80/50 | Loss: 0.7675
-Proxy Epoch 90/50 | Loss: 0.7585
-Proxy Epoch 100/50 | Loss: 0.7492
-Proxy Epoch 110/50 | Loss: 0.7396
-Proxy Epoch 120/50 | Loss: 0.7310
-Proxy Epoch 130/50 | Loss: 0.7224
-Proxy Epoch 140/50 | Loss: 0.7142
-Proxy Epoch 150/50 | Loss: 0.7054
-Proxy Epoch 160/50 | Loss: 0.6974
-Proxy Epoch 170/50 | Loss: 0.6894
-Proxy Epoch 180/50 | Loss: 0.6822
-Proxy Epoch 190/50 | Loss: 0.6766
-Proxy Epoch 200/50 | Loss: 0.6693
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.512682
-Flow Epoch 20/100 | Loss: 0.419255
-Flow Epoch 30/100 | Loss: 0.381799
-Flow Epoch 40/100 | Loss: 0.355171
-Flow Epoch 50/100 | Loss: 0.336539
-Flow Epoch 60/100 | Loss: 0.321483
-Flow Epoch 70/100 | Loss: 0.305847
-Flow Epoch 80/100 | Loss: 0.293825
-Flow Epoch 90/100 | Loss: 0.283073
-Flow Epoch 100/100 | Loss: 0.271798
+Flow Epoch 10/100 | Loss: 0.453882
+Flow Epoch 20/100 | Loss: 0.366822
+Flow Epoch 30/100 | Loss: 0.324913
+Flow Epoch 40/100 | Loss: 0.291540
+Flow Epoch 50/100 | Loss: 0.269076
+Flow Epoch 60/100 | Loss: 0.244961
+Flow Epoch 70/100 | Loss: 0.232761
+Flow Epoch 80/100 | Loss: 0.222258
+Flow Epoch 90/100 | Loss: 0.212842
+Flow Epoch 100/100 | Loss: 0.207050
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.5658
-Optimized Score Max (valid only):  0.9308
-Normalized Percentile Scores (100th / 80th / 50th): 0.9308 | 0.7278 | 0.5647
-Average Improvement (valid only):  3.8278
+Optimized Score Mean (valid only): 0.3805
+Optimized Score Max (valid only):  0.9131
+Normalized Percentile Scores (100th / 80th / 50th): 0.9131 | 0.5318 | 0.3396
+Average Improvement (valid only):  3.6425
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3706
+Optimized Score Max (valid only):  0.9747
+Normalized Percentile Scores (100th / 80th / 50th): 0.9747 | 0.4602 | 0.3219
+Average Improvement (valid only):  3.6326
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3477
+Optimized Score Max (valid only):  0.9461
+Normalized Percentile Scores (100th / 80th / 50th): 0.9461 | 0.4432 | 0.3005
+Average Improvement (valid only):  3.6098
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3459
+Optimized Score Max (valid only):  0.8399
+Normalized Percentile Scores (100th / 80th / 50th): 0.8399 | 0.4599 | 0.3229
+Average Improvement (valid only):  3.6080
 ------------------------------
 Seed: 1 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.9007
-Proxy Epoch 20/50 | Loss: 0.8676
-Proxy Epoch 30/50 | Loss: 0.8455
-Proxy Epoch 40/50 | Loss: 0.8262
-Proxy Epoch 50/50 | Loss: 0.8086
-Proxy Epoch 60/50 | Loss: 0.7948
-Proxy Epoch 70/50 | Loss: 0.7843
-Proxy Epoch 80/50 | Loss: 0.7755
-Proxy Epoch 90/50 | Loss: 0.7674
-Proxy Epoch 100/50 | Loss: 0.7592
-Proxy Epoch 110/50 | Loss: 0.7507
-Proxy Epoch 120/50 | Loss: 0.7417
-Proxy Epoch 130/50 | Loss: 0.7323
-Proxy Epoch 140/50 | Loss: 0.7238
-Proxy Epoch 150/50 | Loss: 0.7153
-Proxy Epoch 160/50 | Loss: 0.7071
-Proxy Epoch 170/50 | Loss: 0.6986
-Proxy Epoch 180/50 | Loss: 0.6918
-Proxy Epoch 190/50 | Loss: 0.6839
-Proxy Epoch 200/50 | Loss: 0.6772
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.502973
-Flow Epoch 20/100 | Loss: 0.419045
-Flow Epoch 30/100 | Loss: 0.383785
-Flow Epoch 40/100 | Loss: 0.358361
-Flow Epoch 50/100 | Loss: 0.342022
-Flow Epoch 60/100 | Loss: 0.326694
-Flow Epoch 70/100 | Loss: 0.315978
-Flow Epoch 80/100 | Loss: 0.305582
-Flow Epoch 90/100 | Loss: 0.299489
-Flow Epoch 100/100 | Loss: 0.295499
+Flow Epoch 10/100 | Loss: 0.451274
+Flow Epoch 20/100 | Loss: 0.364636
+Flow Epoch 30/100 | Loss: 0.321658
+Flow Epoch 40/100 | Loss: 0.288941
+Flow Epoch 50/100 | Loss: 0.264579
+Flow Epoch 60/100 | Loss: 0.245361
+Flow Epoch 70/100 | Loss: 0.230980
+Flow Epoch 80/100 | Loss: 0.217272
+Flow Epoch 90/100 | Loss: 0.208276
+Flow Epoch 100/100 | Loss: 0.201152
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.6213
-Optimized Score Max (valid only):  0.9246
-Normalized Percentile Scores (100th / 80th / 50th): 0.9246 | 0.7772 | 0.6113
-Average Improvement (valid only):  3.8834
+Optimized Score Mean (valid only): 0.3516
+Optimized Score Max (valid only):  0.7919
+Normalized Percentile Scores (100th / 80th / 50th): 0.7919 | 0.4741 | 0.3645
+Average Improvement (valid only):  3.6137
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3545
+Optimized Score Max (valid only):  0.9049
+Normalized Percentile Scores (100th / 80th / 50th): 0.9049 | 0.4388 | 0.3224
+Average Improvement (valid only):  3.6165
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3864
+Optimized Score Max (valid only):  0.9045
+Normalized Percentile Scores (100th / 80th / 50th): 0.9045 | 0.5015 | 0.3482
+Average Improvement (valid only):  3.6485
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3693
+Optimized Score Max (valid only):  0.8251
+Normalized Percentile Scores (100th / 80th / 50th): 0.8251 | 0.4872 | 0.3431
+Average Improvement (valid only):  3.6314
 ------------------------------
 Seed: 2 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.9217
-Proxy Epoch 20/50 | Loss: 0.8748
-Proxy Epoch 30/50 | Loss: 0.8589
-Proxy Epoch 40/50 | Loss: 0.8439
-Proxy Epoch 50/50 | Loss: 0.8283
-Proxy Epoch 60/50 | Loss: 0.8117
-Proxy Epoch 70/50 | Loss: 0.7974
-Proxy Epoch 80/50 | Loss: 0.7867
-Proxy Epoch 90/50 | Loss: 0.7782
-Proxy Epoch 100/50 | Loss: 0.7706
-Proxy Epoch 110/50 | Loss: 0.7634
-Proxy Epoch 120/50 | Loss: 0.7564
-Proxy Epoch 130/50 | Loss: 0.7492
-Proxy Epoch 140/50 | Loss: 0.7416
-Proxy Epoch 150/50 | Loss: 0.7337
-Proxy Epoch 160/50 | Loss: 0.7256
-Proxy Epoch 170/50 | Loss: 0.7176
-Proxy Epoch 180/50 | Loss: 0.7097
-Proxy Epoch 190/50 | Loss: 0.7023
-Proxy Epoch 200/50 | Loss: 0.6949
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.514749
-Flow Epoch 20/100 | Loss: 0.430195
-Flow Epoch 30/100 | Loss: 0.391561
-Flow Epoch 40/100 | Loss: 0.368100
-Flow Epoch 50/100 | Loss: 0.346826
-Flow Epoch 60/100 | Loss: 0.334991
-Flow Epoch 70/100 | Loss: 0.319823
-Flow Epoch 80/100 | Loss: 0.310898
-Flow Epoch 90/100 | Loss: 0.298572
-Flow Epoch 100/100 | Loss: 0.290390
+Flow Epoch 10/100 | Loss: 0.456370
+Flow Epoch 20/100 | Loss: 0.368282
+Flow Epoch 30/100 | Loss: 0.322460
+Flow Epoch 40/100 | Loss: 0.288199
+Flow Epoch 50/100 | Loss: 0.262486
+Flow Epoch 60/100 | Loss: 0.244450
+Flow Epoch 70/100 | Loss: 0.234610
+Flow Epoch 80/100 | Loss: 0.222819
+Flow Epoch 90/100 | Loss: 0.212068
+Flow Epoch 100/100 | Loss: 0.202513
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.5580
-Optimized Score Max (valid only):  0.9885
-Normalized Percentile Scores (100th / 80th / 50th): 0.9885 | 0.7701 | 0.5217
-Average Improvement (valid only):  3.8200
+Optimized Score Mean (valid only): 0.3461
+Optimized Score Max (valid only):  0.8018
+Normalized Percentile Scores (100th / 80th / 50th): 0.8018 | 0.4737 | 0.3351
+Average Improvement (valid only):  3.6081
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3534
+Optimized Score Max (valid only):  0.7729
+Normalized Percentile Scores (100th / 80th / 50th): 0.7729 | 0.4631 | 0.3353
+Average Improvement (valid only):  3.6155
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3178
+Optimized Score Max (valid only):  0.4841
+Normalized Percentile Scores (100th / 80th / 50th): 0.4841 | 0.4144 | 0.3198
+Average Improvement (valid only):  3.5799
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.2551
+Optimized Score Max (valid only):  0.6045
+Normalized Percentile Scores (100th / 80th / 50th): 0.6045 | 0.3150 | 0.2407
+Average Improvement (valid only):  3.5171
 ------------------------------
 Seed: 3 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.8944
-Proxy Epoch 20/50 | Loss: 0.8671
-Proxy Epoch 30/50 | Loss: 0.8444
-Proxy Epoch 40/50 | Loss: 0.8253
-Proxy Epoch 50/50 | Loss: 0.8077
-Proxy Epoch 60/50 | Loss: 0.7931
-Proxy Epoch 70/50 | Loss: 0.7815
-Proxy Epoch 80/50 | Loss: 0.7718
-Proxy Epoch 90/50 | Loss: 0.7627
-Proxy Epoch 100/50 | Loss: 0.7535
-Proxy Epoch 110/50 | Loss: 0.7438
-Proxy Epoch 120/50 | Loss: 0.7354
-Proxy Epoch 130/50 | Loss: 0.7264
-Proxy Epoch 140/50 | Loss: 0.7182
-Proxy Epoch 150/50 | Loss: 0.7099
-Proxy Epoch 160/50 | Loss: 0.7017
-Proxy Epoch 170/50 | Loss: 0.6947
-Proxy Epoch 180/50 | Loss: 0.6880
-Proxy Epoch 190/50 | Loss: 0.6808
-Proxy Epoch 200/50 | Loss: 0.6742
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.506443
-Flow Epoch 20/100 | Loss: 0.417016
-Flow Epoch 30/100 | Loss: 0.375245
-Flow Epoch 40/100 | Loss: 0.346401
-Flow Epoch 50/100 | Loss: 0.326378
-Flow Epoch 60/100 | Loss: 0.310709
-Flow Epoch 70/100 | Loss: 0.295871
-Flow Epoch 80/100 | Loss: 0.283809
-Flow Epoch 90/100 | Loss: 0.272414
-Flow Epoch 100/100 | Loss: 0.262086
+Flow Epoch 10/100 | Loss: 0.452748
+Flow Epoch 20/100 | Loss: 0.365627
+Flow Epoch 30/100 | Loss: 0.321124
+Flow Epoch 40/100 | Loss: 0.291292
+Flow Epoch 50/100 | Loss: 0.266695
+Flow Epoch 60/100 | Loss: 0.250181
+Flow Epoch 70/100 | Loss: 0.233456
+Flow Epoch 80/100 | Loss: 0.223251
+Flow Epoch 90/100 | Loss: 0.212008
+Flow Epoch 100/100 | Loss: 0.204903
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.6494
-Optimized Score Max (valid only):  0.8890
-Normalized Percentile Scores (100th / 80th / 50th): 0.8890 | 0.7367 | 0.6544
-Average Improvement (valid only):  3.9115
+Optimized Score Mean (valid only): 0.4036
+Optimized Score Max (valid only):  0.9001
+Normalized Percentile Scores (100th / 80th / 50th): 0.9001 | 0.5218 | 0.3688
+Average Improvement (valid only):  3.6656
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.4976
+Optimized Score Max (valid only):  0.8705
+Normalized Percentile Scores (100th / 80th / 50th): 0.8705 | 0.7236 | 0.4876
+Average Improvement (valid only):  3.7596
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.4696
+Optimized Score Max (valid only):  0.8737
+Normalized Percentile Scores (100th / 80th / 50th): 0.8737 | 0.7236 | 0.3972
+Average Improvement (valid only):  3.7317
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3918
+Optimized Score Max (valid only):  0.7956
+Normalized Percentile Scores (100th / 80th / 50th): 0.7956 | 0.5092 | 0.3547
+Average Improvement (valid only):  3.6538
 ------------------------------
 Seed: 4 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.8910
-Proxy Epoch 20/50 | Loss: 0.8657
-Proxy Epoch 30/50 | Loss: 0.8455
-Proxy Epoch 40/50 | Loss: 0.8260
-Proxy Epoch 50/50 | Loss: 0.8065
-Proxy Epoch 60/50 | Loss: 0.7907
-Proxy Epoch 70/50 | Loss: 0.7787
-Proxy Epoch 80/50 | Loss: 0.7682
-Proxy Epoch 90/50 | Loss: 0.7583
-Proxy Epoch 100/50 | Loss: 0.7483
-Proxy Epoch 110/50 | Loss: 0.7383
-Proxy Epoch 120/50 | Loss: 0.7290
-Proxy Epoch 130/50 | Loss: 0.7204
-Proxy Epoch 140/50 | Loss: 0.7118
-Proxy Epoch 150/50 | Loss: 0.7033
-Proxy Epoch 160/50 | Loss: 0.6953
-Proxy Epoch 170/50 | Loss: 0.6882
-Proxy Epoch 180/50 | Loss: 0.6809
-Proxy Epoch 190/50 | Loss: 0.6743
-Proxy Epoch 200/50 | Loss: 0.6718
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.507638
-Flow Epoch 20/100 | Loss: 0.419969
-Flow Epoch 30/100 | Loss: 0.382123
-Flow Epoch 40/100 | Loss: 0.356897
-Flow Epoch 50/100 | Loss: 0.338658
-Flow Epoch 60/100 | Loss: 0.324802
-Flow Epoch 70/100 | Loss: 0.315678
-Flow Epoch 80/100 | Loss: 0.303318
-Flow Epoch 90/100 | Loss: 0.292363
-Flow Epoch 100/100 | Loss: 0.286299
+Flow Epoch 10/100 | Loss: 0.455971
+Flow Epoch 20/100 | Loss: 0.364667
+Flow Epoch 30/100 | Loss: 0.323763
+Flow Epoch 40/100 | Loss: 0.289520
+Flow Epoch 50/100 | Loss: 0.268085
+Flow Epoch 60/100 | Loss: 0.248069
+Flow Epoch 70/100 | Loss: 0.232266
+Flow Epoch 80/100 | Loss: 0.219150
+Flow Epoch 90/100 | Loss: 0.209507
+Flow Epoch 100/100 | Loss: 0.200385
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.6542
-Optimized Score Max (valid only):  0.9320
-Normalized Percentile Scores (100th / 80th / 50th): 0.9320 | 0.8059 | 0.6690
-Average Improvement (valid only):  3.9163
+Optimized Score Mean (valid only): 0.4178
+Optimized Score Max (valid only):  0.9486
+Normalized Percentile Scores (100th / 80th / 50th): 0.9486 | 0.5452 | 0.4084
+Average Improvement (valid only):  3.6798
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.5582
+Optimized Score Max (valid only):  0.9650
+Normalized Percentile Scores (100th / 80th / 50th): 0.9650 | 0.7503 | 0.5359
+Average Improvement (valid only):  3.8203
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.5546
+Optimized Score Max (valid only):  0.9544
+Normalized Percentile Scores (100th / 80th / 50th): 0.9544 | 0.7724 | 0.5393
+Average Improvement (valid only):  3.8166
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.5092
+Optimized Score Max (valid only):  0.9482
+Normalized Percentile Scores (100th / 80th / 50th): 0.9482 | 0.6053 | 0.5171
+Average Improvement (valid only):  3.7713
 ------------------------------
 Seed: 5 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.9072
-Proxy Epoch 20/50 | Loss: 0.8702
-Proxy Epoch 30/50 | Loss: 0.8510
-Proxy Epoch 40/50 | Loss: 0.8341
-Proxy Epoch 50/50 | Loss: 0.8172
-Proxy Epoch 60/50 | Loss: 0.8020
-Proxy Epoch 70/50 | Loss: 0.7898
-Proxy Epoch 80/50 | Loss: 0.7799
-Proxy Epoch 90/50 | Loss: 0.7714
-Proxy Epoch 100/50 | Loss: 0.7635
-Proxy Epoch 110/50 | Loss: 0.7555
-Proxy Epoch 120/50 | Loss: 0.7471
-Proxy Epoch 130/50 | Loss: 0.7383
-Proxy Epoch 140/50 | Loss: 0.7291
-Proxy Epoch 150/50 | Loss: 0.7202
-Proxy Epoch 160/50 | Loss: 0.7115
-Proxy Epoch 170/50 | Loss: 0.7027
-Proxy Epoch 180/50 | Loss: 0.6945
-Proxy Epoch 190/50 | Loss: 0.6871
-Proxy Epoch 200/50 | Loss: 0.6796
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.513146
-Flow Epoch 20/100 | Loss: 0.420147
-Flow Epoch 30/100 | Loss: 0.379688
-Flow Epoch 40/100 | Loss: 0.354853
-Flow Epoch 50/100 | Loss: 0.338376
-Flow Epoch 60/100 | Loss: 0.321715
-Flow Epoch 70/100 | Loss: 0.306828
-Flow Epoch 80/100 | Loss: 0.300189
-Flow Epoch 90/100 | Loss: 0.286136
-Flow Epoch 100/100 | Loss: 0.279441
+Flow Epoch 10/100 | Loss: 0.455248
+Flow Epoch 20/100 | Loss: 0.367228
+Flow Epoch 30/100 | Loss: 0.322982
+Flow Epoch 40/100 | Loss: 0.291037
+Flow Epoch 50/100 | Loss: 0.265800
+Flow Epoch 60/100 | Loss: 0.249016
+Flow Epoch 70/100 | Loss: 0.233382
+Flow Epoch 80/100 | Loss: 0.221381
+Flow Epoch 90/100 | Loss: 0.209589
+Flow Epoch 100/100 | Loss: 0.204311
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.6934
-Optimized Score Max (valid only):  0.9488
-Normalized Percentile Scores (100th / 80th / 50th): 0.9488 | 0.7963 | 0.6718
-Average Improvement (valid only):  3.9555
+Optimized Score Mean (valid only): 0.2918
+Optimized Score Max (valid only):  0.8630
+Normalized Percentile Scores (100th / 80th / 50th): 0.8630 | 0.3933 | 0.2717
+Average Improvement (valid only):  3.5539
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.2955
+Optimized Score Max (valid only):  0.8440
+Normalized Percentile Scores (100th / 80th / 50th): 0.8440 | 0.3657 | 0.2751
+Average Improvement (valid only):  3.5575
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3363
+Optimized Score Max (valid only):  0.8440
+Normalized Percentile Scores (100th / 80th / 50th): 0.8440 | 0.3981 | 0.3252
+Average Improvement (valid only):  3.5984
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.4093
+Optimized Score Max (valid only):  0.8499
+Normalized Percentile Scores (100th / 80th / 50th): 0.8499 | 0.5659 | 0.3592
+Average Improvement (valid only):  3.6714
 ------------------------------
 Seed: 6 completed
 Experiment: TFBind8-Exact-v0 | Device: cuda
 Loading task: TFBind8-Exact-v0...
 Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
 Strategy: Optimize Bottom 50% -> Top 50%
-Pools: Source=16448, Target=6580
-Starting Semantic Pairing (Pools: Low=16448, High=6580)...
+Pools: Source=16448, Target=3290
+Starting Semantic Pairing (Pools: Low=16448, High=3290)...
 Pairing complete. Created 16448 pairs.
 Model Input Dimension: 32
 
 Training Score Proxy (for Guidance)...
-Proxy Training Data Shape: torch.Size([32898, 32])
-Proxy Epoch 10/50 | Loss: 0.9166
-Proxy Epoch 20/50 | Loss: 0.8686
-Proxy Epoch 30/50 | Loss: 0.8512
-Proxy Epoch 40/50 | Loss: 0.8345
-Proxy Epoch 50/50 | Loss: 0.8175
-Proxy Epoch 60/50 | Loss: 0.8018
-Proxy Epoch 70/50 | Loss: 0.7898
-Proxy Epoch 80/50 | Loss: 0.7805
-Proxy Epoch 90/50 | Loss: 0.7724
-Proxy Epoch 100/50 | Loss: 0.7648
-Proxy Epoch 110/50 | Loss: 0.7572
-Proxy Epoch 120/50 | Loss: 0.7493
-Proxy Epoch 130/50 | Loss: 0.7411
-Proxy Epoch 140/50 | Loss: 0.7325
-Proxy Epoch 150/50 | Loss: 0.7239
-Proxy Epoch 160/50 | Loss: 0.7155
-Proxy Epoch 170/50 | Loss: 0.7071
-Proxy Epoch 180/50 | Loss: 0.6988
-Proxy Epoch 190/50 | Loss: 0.6912
-Proxy Epoch 200/50 | Loss: 0.6835
 
 Start Training Flow Model...
-Flow Epoch 10/100 | Loss: 0.512149
-Flow Epoch 20/100 | Loss: 0.421997
-Flow Epoch 30/100 | Loss: 0.383538
-Flow Epoch 40/100 | Loss: 0.359949
-Flow Epoch 50/100 | Loss: 0.340861
-Flow Epoch 60/100 | Loss: 0.323224
-Flow Epoch 70/100 | Loss: 0.313329
-Flow Epoch 80/100 | Loss: 0.301106
-Flow Epoch 90/100 | Loss: 0.290157
-Flow Epoch 100/100 | Loss: 0.280309
+Flow Epoch 10/100 | Loss: 0.447875
+Flow Epoch 20/100 | Loss: 0.361804
+Flow Epoch 30/100 | Loss: 0.317408
+Flow Epoch 40/100 | Loss: 0.286478
+Flow Epoch 50/100 | Loss: 0.261495
+Flow Epoch 60/100 | Loss: 0.245009
+Flow Epoch 70/100 | Loss: 0.230554
+Flow Epoch 80/100 | Loss: 0.219024
+Flow Epoch 90/100 | Loss: 0.207139
+Flow Epoch 100/100 | Loss: 0.203189
 
 Running Evaluation with Guidance...
-Max Training Sigma: 1.4803
-Conditioning on Target Score: 1.6283
-iteration, guidance_scale 0 20.0
+
+Running Evaluation with CFG...
+
+>>> [CFG] Scale: 1.0 <<<
 x_reshaped.shape
 torch.Size([128, 8, 4])
 ------------------------------
 Optimization Results (Top 128 samples optimized):
 Original Score Mean: -3.2621
-Optimized Score Mean (valid only): 0.6972
-Optimized Score Max (valid only):  0.9827
-Normalized Percentile Scores (100th / 80th / 50th): 0.9827 | 0.9247 | 0.6957
-Average Improvement (valid only):  3.9593
+Optimized Score Mean (valid only): 0.3285
+Optimized Score Max (valid only):  0.6367
+Normalized Percentile Scores (100th / 80th / 50th): 0.6367 | 0.4392 | 0.3375
+Average Improvement (valid only):  3.5906
+------------------------------
+
+>>> [CFG] Scale: 2.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3587
+Optimized Score Max (valid only):  0.7648
+Normalized Percentile Scores (100th / 80th / 50th): 0.7648 | 0.4361 | 0.3569
+Average Improvement (valid only):  3.6208
+------------------------------
+
+>>> [CFG] Scale: 4.0 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3823
+Optimized Score Max (valid only):  0.8435
+Normalized Percentile Scores (100th / 80th / 50th): 0.8435 | 0.4625 | 0.3569
+Average Improvement (valid only):  3.6443
+------------------------------
+
+>>> [CFG] Scale: 7.5 <<<
+x_reshaped.shape
+torch.Size([128, 8, 4])
+------------------------------
+Optimization Results (Top 128 samples optimized):
+Original Score Mean: -3.2621
+Optimized Score Mean (valid only): 0.3918
+Optimized Score Max (valid only):  0.8435
+Normalized Percentile Scores (100th / 80th / 50th): 0.8435 | 0.4708 | 0.3864
+Average Improvement (valid only):  3.6539
 ------------------------------
 Seed: 7 completed
 ==============================
-Average Normalized Percentile Scores across seeds (100th / 80th / 50th): 0.9319 | 0.7942 | 0.6390
-Std of Normalized Percentile Scores across seeds (100th / 80th / 50th): 0.0407 | 0.0572 | 0.0638
+Average Normalized Percentile Scores across seeds (100th / 80th / 50th): 0.8007 | 0.4713 | 0.3601
+Std of Normalized Percentile Scores across seeds (100th / 80th / 50th): 0.0981 | 0.0910 | 0.0719
 ==============================
