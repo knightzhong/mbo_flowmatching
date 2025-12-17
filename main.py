@@ -50,17 +50,17 @@ def main():
     all_x = offline_x.to(cfg.DEVICE)
     all_y = offline_y.to(cfg.DEVICE).view(-1, 1)
     
-    # print(f"Proxy Training Data Shape: {all_x.shape}") # 确认是 [32898, 32]
+    print(f"Proxy Training Data Shape: {all_x.shape}") # 确认是 [32898, 32]
 
-    # # 简单的训练循环 (50 epochs 足够了)
-    # for i in range(200):
-    #     proxy_opt.zero_grad()
-    #     pred_y = proxy(all_x)
-    #     loss = nn.MSELoss()(pred_y, all_y)
-    #     loss.backward()
-    #     proxy_opt.step()
-    #     if (i + 1) % 10 == 0:
-    #         print(f"Proxy Epoch {i+1}/50 | Loss: {loss.item():.4f}")
+    # 简单的训练循环 (50 epochs 足够了)
+    for i in range(200):
+        proxy_opt.zero_grad()
+        pred_y = proxy(all_x)
+        loss = nn.MSELoss()(pred_y, all_y)
+        loss.backward()
+        proxy_opt.step()
+        if (i + 1) % 10 == 0:
+            print(f"Proxy Epoch {i+1}/50 | Loss: {loss.item():.4f}")
     
     # ==========================================
     # Part B: 训练 Flow Matching 模型
@@ -87,112 +87,123 @@ def main():
     # 定义引导函数
     def guidance_func(x):
         return proxy(x)
-    # ==========================================
-    # Part C: 评估 (Evaluation + Guidance)
-    # ==========================================
-    print("\nRunning Evaluation with Guidance...")
     
-    # 1. 准备起始数据 (Bottom 样本)
-    y_sorted_indices = torch.argsort(offline_y)
-    x_start = offline_x[y_sorted_indices][:cfg.NUM_SAMPLES].to(cfg.DEVICE)
-    original_y = offline_y[y_sorted_indices][:cfg.NUM_SAMPLES]
-    
-    # 2. 设定目标分数 (Target Score)
-    # 因为 y 已经归一化了，所以 target=max(y_train) 是一个安全且强力的目标
-    # 计算训练集中见过的最大归一化分数
+    y_sorted_indices = torch.argsort(offline_y) 
     max_train_y_norm = offline_y.max().item()
+    # ==========================================
+    # Part C: 评估 (CFG + Proxy Screening / Rejection Sampling)
+    # ==========================================
+    print("\nRunning Evaluation with CFG + Proxy Screening...")
     
-    # 策略：稍微推高一点点 (1.1倍)，引导模型向更优处探索
-    # 对于 TFBind8，这通常在 2.5 ~ 3.0 之间
-    TARGET_SIGMA = max_train_y_norm * 1.1
+    # 1. 设置筛选参数
+    # 我们要生成 1280 个候选样本，最后选出 128 个
+    # 这样 Proxy 就能帮我们过滤掉那些“虽然符合条件但实际质量不高”的样本
+    NUM_CANDIDATES = 1280 
+    FINAL_K = 128         
+    BEST_SCALE = 4.0      # 根据之前的实验，4.0 是效果最好的 Scale
     
-    y_target_norm = torch.full((cfg.NUM_SAMPLES, 1), TARGET_SIGMA, device=cfg.DEVICE)
-    y_low_start = original_y.view(-1, 1).to(cfg.DEVICE)
+    # 2. 准备起始数据 (随机采样策略)
+    # 策略：从 Bottom 50% 的数据中随机抽取 1280 个不同的样本
+    # 这样能保证起始点的多样性，避免重复计算
     
-    # 评估部分
-    print("\nRunning Evaluation with CFG...")
-    test_scales = [1.0, 2.5, 4.0, 7.5] # CFG 的典型 Scale 比较小，通常 3.0 - 5.0 是最佳
-
-    for scale in test_scales:
-        print(f"\n>>> [CFG] Scale: {scale} <<<")
-        # 注意：不再需要 guidance_fn 参数
-        x_optimized = cfm.sample(
-            x_start, 
-            y_high=y_target_norm, 
-            y_low=y_low_start,
+    # 确定 Source Pool 的范围 (Bottom 50%)
+    # 注意：这里我们利用 y_sorted_indices 来定位低分区域
+    num_total = offline_x.shape[0]
+    num_source_pool = int(num_total * 0.5) # 取前 50% 最差的作为池子
+    
+    # 获取 Bottom 50% 的索引
+    source_indices = y_sorted_indices[:num_source_pool]
+    
+    # 从中随机采样 1280 个索引 (无放回，如果池子够大)
+    # 这种随机性是 MBO 成功的关键之一
+    random_perm = torch.randperm(len(source_indices))
+    selected_indices = source_indices[random_perm[:NUM_CANDIDATES]]
+    
+    # 提取起始样本 x_start 和对应的 y_low
+    x_start_candidates = offline_x[selected_indices].to(cfg.DEVICE)
+    y_low_candidates = offline_y[selected_indices].view(-1, 1).to(cfg.DEVICE)
+    
+    # 准备目标分数 y_target (Broadcast 到 1280 个)
+    # 依然设定为训练集最大值的 1.1 倍，或者直接设定为高分
+    y_target_val = max_train_y_norm * 1.1 
+    y_target_candidates = torch.full((NUM_CANDIDATES, 1), y_target_val, device=cfg.DEVICE)
+    
+    print(f"Generating {NUM_CANDIDATES} candidates (Scale={BEST_SCALE}) from random bottom 50% samples...")
+    
+    # 3. 批量生成 (Generation)
+    # 如果显存不够，可以分 Batch 跑，这里假设 TFBind8 (32维) 1280个样本能一次跑完
+    cfm.model.eval()
+    with torch.no_grad():
+        x_generated = cfm.sample(
+            x_start_candidates, 
+            y_high=y_target_candidates, 
+            y_low=y_low_candidates,
             steps=cfg.ODE_STEPS,
-            guidance_scale=scale 
+            guidance_scale=BEST_SCALE 
         )
+        
+    # 4. Proxy 打分筛选 (Screening)
+    print("Screening candidates with Proxy...")
+    proxy.eval()
+    with torch.no_grad():
+        # 让 Proxy 给这 1280 个生成样本打分
+        # 注意：Proxy 输出可能是 (N, 1)，需要 view(-1)
+        pred_scores = proxy(x_generated).view(-1)
+        
+        # 选出 Proxy 认为分数最高的 128 个 (Top K)
+        # 这一步是把“运气”变成“实力”的关键
+        top_scores, top_indices = torch.topk(pred_scores, k=FINAL_K)
+        
+        # 提取最终优胜者
+        x_final = x_generated[top_indices]
+        # 同时也提取出它们对应的原始 x_start，方便计算 improvement
+        # x_start_final = x_start_candidates[top_indices]
+        # y_original_final = offline_y[selected_indices][top_indices.cpu()] # 对应的原始真实分数
+        
+    # 5. Oracle 最终评估 (Oracle Evaluation)
+    print(f"Evaluating Top {FINAL_K} Candidates selected by Proxy...")
     
-        # 4. 后处理与解码 (关键修改！)
-        # 反标准化
-        x_denorm = x_optimized * std_x + mean_x
+    # 反标准化
+    x_denorm = x_final * std_x + mean_x
+    
+    # 解码与打分
+    if task.is_discrete:
+        vocab_size = 4
+        seq_len = x_denorm.shape[1] // vocab_size
+        x_reshaped = x_denorm.view(x_denorm.shape[0], seq_len, vocab_size)
+        x_opt_indices = torch.argmax(x_reshaped, dim=2).cpu().numpy()
+        final_scores = task.predict(x_opt_indices)
+    else:
+        final_scores = task.predict(x_denorm.cpu().numpy())
         
-        if task.is_discrete:
-            # === 关键：手动解码 4 维 One-Hot ===
-            # 此时 x_denorm 是 (N, 32)
-            # 我们知道 TFBind8 是 8 个位置，每个位置 4 种可能
-            vocab_size = 4
-            seq_len = x_denorm.shape[1] // vocab_size # 应该是 8
-            
-            # Reshape 回 (N, 8, 4)
-            x_reshaped = x_denorm.view(x_denorm.shape[0], seq_len, vocab_size)
-            print('x_reshaped.shape') 
-            print(x_reshaped.shape) 
-            # Argmax: 找出每个位置概率最大的碱基索引 (0-3)
-            # 这就是这一方案最稳的地方：哪怕数值有噪声，最大值通常是对的
-            x_opt_indices = torch.argmax(x_reshaped, dim=2).cpu().numpy()
-            
-            # 直接把离散索引喂给 task.predict
-            # 注意：不要调用 task.map_to_logits()，因为我们给的是 indices
-            final_scores = task.predict(x_opt_indices)
-        else:
-            final_scores = task.predict(x_denorm.cpu().numpy())
-        
-        # ==========================================
-        # 结果评估：与 ROOT 一致（归一化百分位数分数）
-        # ==========================================
-        # 1. 计算归一化分数（与 ROOT 一致）
-        final_scores_flat = np.asarray(final_scores).reshape(-1)
-        finite_mask = np.isfinite(final_scores_flat)
-        num_bad = final_scores_flat.shape[0] - finite_mask.sum()
-        if num_bad > 0:
-            print(f"Warning: found {num_bad} non-finite scores (inf/-inf/nan); excluded from stats.")
-        valid_scores = final_scores_flat[finite_mask]
-        
-        if valid_scores.size == 0:
-            print("No valid scores to summarize.")
-            return
-        
-        # 2. 归一化分数（与 ROOT 一致）：(score - oracle_y_min) / (oracle_y_max - oracle_y_min)
-        # oracle_y_min = offline_y.min().item()
-        # oracle_y_max = offline_y.max().item() 
-        # 使用 ROOT 中写死的 oracle 上下界，避免受当前 run 的 offline_y 范围影响
-        task_to_min = {'TFBind8-Exact-v0': 0.0, 'TFBind10-Exact-v0': -1.8585268,
-                    'AntMorphology-Exact-v0': -386.90036, 'DKittyMorphology-Exact-v0': -880.4585}
-        task_to_max = {'TFBind8-Exact-v0': 1.0, 'TFBind10-Exact-v0': 2.1287067,
-                    'AntMorphology-Exact-v0': 590.24445, 'DKittyMorphology-Exact-v0': 340.90985}
+    # ==========================================
+    # 统计结果
+    # ==========================================
+    final_scores_flat = np.asarray(final_scores).reshape(-1)
+    valid_scores = final_scores_flat[np.isfinite(final_scores_flat)]
+    
+    if len(valid_scores) > 0:
+        # 归一化分数计算 (与之前逻辑一致)
+        # oracle_y_min/max 需要你在前面定义好，或者这里重新从 task_to_min/max 获取
+        task_to_min = {'TFBind8-Exact-v0': 0.0, 'TFBind10-Exact-v0': -1.8585268}
+        task_to_max = {'TFBind8-Exact-v0': 1.0, 'TFBind10-Exact-v0': 2.1287067}
         oracle_y_min = task_to_min.get(cfg.TASK_NAME, offline_y.min().item())
         oracle_y_max = task_to_max.get(cfg.TASK_NAME, offline_y.max().item())
+        
         normalized_scores = (valid_scores - oracle_y_min) / (oracle_y_max - oracle_y_min)
+        percentiles = np.percentile(normalized_scores, [100, 80, 50])
         
-        # 3. 计算百分位数（与 ROOT 一致）
-        percentiles = np.percentile(normalized_scores, [100, 80, 50])  # 100th, 80th, 50th
-        
-        # 结果展示
         print("-" * 30)
-        print(f"Optimization Results (Top {cfg.NUM_SAMPLES} samples optimized):")
-        print(f"Original Score Mean: {original_y.mean().item():.4f}")
+        print(f"Optimization Results (Proxy Screened Top {FINAL_K}):")
+        # print(f"Original Score Mean (of selected starts): {y_original_final.mean().item():.4f}") # 可选
         print(f"Optimized Score Mean (valid only): {valid_scores.mean():.4f}")
         print(f"Optimized Score Max (valid only):  {valid_scores.max():.4f}")
         print(f"Normalized Percentile Scores (100th / 80th / 50th): {percentiles[0]:.4f} | {percentiles[1]:.4f} | {percentiles[2]:.4f}")
-        
-        improvement = valid_scores.mean() - original_y.mean().item()
-        print(f"Average Improvement (valid only):  {improvement:.4f}")
         print("-" * 30)
-
-    # 返回当前 seed 的百分位结果，便于多 seed 汇总
-    return percentiles
+        return percentiles
+    else:
+        print("No valid scores generated.")
+        return None
 
 def seed_everything(seed=42):
     import random
