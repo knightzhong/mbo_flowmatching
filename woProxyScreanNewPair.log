@@ -1,0 +1,405 @@
+nohup: 忽略输入
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[10.0096, 34.5837, 29.6572,  ..., 90.6867, 94.7551, 81.2316],
+        [22.1494, 23.4995, 33.2963,  ..., 90.6560, 94.8394, 83.7030],
+        [30.3046, 11.2053, 22.7871,  ..., 75.7124, 78.5299, 89.0830],
+        ...,
+        [78.7474, 66.1081, 68.4910,  ..., 19.5226, 32.6400, 21.2371],
+        [83.7728, 68.9253, 70.2631,  ..., 21.9380, 11.6965, 46.2300],
+        [82.4049, 95.6120, 90.3931,  ..., 31.3720, 45.2834, 10.9339]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.14, Max=17.29
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.325126
+Flow Epoch 20/100 | Loss: 0.280776
+Flow Epoch 30/100 | Loss: 0.243605
+Flow Epoch 40/100 | Loss: 0.221991
+Flow Epoch 50/100 | Loss: 0.207680
+Flow Epoch 60/100 | Loss: 0.197802
+Flow Epoch 70/100 | Loss: 0.188606
+Flow Epoch 80/100 | Loss: 0.180526
+Flow Epoch 90/100 | Loss: 0.171642
+Flow Epoch 100/100 | Loss: 0.167540
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3745
+Optimized Score Max (valid only):  0.9249
+Normalized Percentile Scores (100th / 80th / 50th): 0.9249 | 0.4570 | 0.3618
+------------------------------
+Seed: 0 completed
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[13.9322, 35.7855, 31.0118,  ..., 97.0509, 95.9351, 83.7583],
+        [24.3634, 25.4100, 33.3302,  ..., 97.0759, 95.0354, 80.3344],
+        [31.8204, 12.9640, 18.9987,  ..., 83.9452, 83.4673, 94.0099],
+        ...,
+        [77.2023, 71.2648, 69.6141,  ..., 23.7519, 35.1569, 22.7850],
+        [77.3203, 67.8849, 67.2448,  ..., 23.1512, 12.5013, 45.4477],
+        [79.3340, 91.7830, 93.0434,  ..., 31.7900, 40.5197, 10.5626]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.14, Max=17.65
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.326987
+Flow Epoch 20/100 | Loss: 0.285059
+Flow Epoch 30/100 | Loss: 0.248067
+Flow Epoch 40/100 | Loss: 0.226030
+Flow Epoch 50/100 | Loss: 0.209413
+Flow Epoch 60/100 | Loss: 0.197497
+Flow Epoch 70/100 | Loss: 0.184503
+Flow Epoch 80/100 | Loss: 0.176560
+Flow Epoch 90/100 | Loss: 0.171510
+Flow Epoch 100/100 | Loss: 0.165888
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3934
+Optimized Score Max (valid only):  0.8347
+Normalized Percentile Scores (100th / 80th / 50th): 0.8347 | 0.4765 | 0.3743
+------------------------------
+Seed: 1 completed
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[10.9147, 34.1735, 31.6222,  ..., 88.9335, 90.8961, 81.1351],
+        [21.7243, 25.4973, 37.2951,  ..., 94.0717, 95.5351, 81.9050],
+        [30.4940, 11.5492, 22.5696,  ..., 80.3111, 80.3126, 90.5182],
+        ...,
+        [79.9976, 70.8131, 70.3154,  ..., 23.0164, 31.8731, 22.7999],
+        [81.2504, 71.7772, 70.7715,  ..., 26.0341, 10.3476, 47.3580],
+        [79.2943, 92.1243, 91.5014,  ..., 29.0679, 38.7018, 11.3089]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.14, Max=17.75
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.328507
+Flow Epoch 20/100 | Loss: 0.288978
+Flow Epoch 30/100 | Loss: 0.254596
+Flow Epoch 40/100 | Loss: 0.232541
+Flow Epoch 50/100 | Loss: 0.215712
+Flow Epoch 60/100 | Loss: 0.200827
+Flow Epoch 70/100 | Loss: 0.192156
+Flow Epoch 80/100 | Loss: 0.184107
+Flow Epoch 90/100 | Loss: 0.179231
+Flow Epoch 100/100 | Loss: 0.172901
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3500
+Optimized Score Max (valid only):  0.7792
+Normalized Percentile Scores (100th / 80th / 50th): 0.7792 | 0.4270 | 0.3477
+------------------------------
+Seed: 2 completed
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[ 10.3771,  34.2352,  33.1602,  ...,  93.0503,  89.2967,  75.7945],
+        [ 22.3571,  24.9901,  37.6143,  ..., 100.5093,  95.3303,  79.7789],
+        [ 31.3413,  10.5593,  21.7415,  ...,  84.4267,  79.6007,  86.7291],
+        ...,
+        [ 84.6304,  68.5560,  72.1426,  ...,  24.5362,  31.8944,  21.8239],
+        [ 77.0101,  64.4775,  68.4589,  ...,  21.2956,  10.8231,  41.2476],
+        [ 81.6171,  92.2422,  93.8703,  ...,  36.0670,  41.6631,  11.3573]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.14, Max=17.38
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.324110
+Flow Epoch 20/100 | Loss: 0.287064
+Flow Epoch 30/100 | Loss: 0.253538
+Flow Epoch 40/100 | Loss: 0.232878
+Flow Epoch 50/100 | Loss: 0.214296
+Flow Epoch 60/100 | Loss: 0.201686
+Flow Epoch 70/100 | Loss: 0.193281
+Flow Epoch 80/100 | Loss: 0.185406
+Flow Epoch 90/100 | Loss: 0.178287
+Flow Epoch 100/100 | Loss: 0.170696
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3736
+Optimized Score Max (valid only):  0.7792
+Normalized Percentile Scores (100th / 80th / 50th): 0.7792 | 0.4665 | 0.3615
+------------------------------
+Seed: 3 completed
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[10.8380, 35.2293, 31.9043,  ..., 91.1860, 94.1519, 81.0777],
+        [24.1702, 24.1643, 32.6832,  ..., 93.3938, 96.4926, 80.2845],
+        [34.7793, 11.8476, 21.4421,  ..., 80.3251, 82.0752, 89.2118],
+        ...,
+        [78.1966, 71.3891, 66.2104,  ..., 21.8656, 31.3273, 19.7977],
+        [81.1981, 72.9038, 69.1138,  ..., 19.5246, 11.3153, 42.9172],
+        [75.3213, 92.8263, 86.5958,  ..., 32.5672, 41.2384, 10.0452]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.13, Max=16.94
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.325479
+Flow Epoch 20/100 | Loss: 0.284552
+Flow Epoch 30/100 | Loss: 0.248422
+Flow Epoch 40/100 | Loss: 0.224469
+Flow Epoch 50/100 | Loss: 0.207372
+Flow Epoch 60/100 | Loss: 0.195151
+Flow Epoch 70/100 | Loss: 0.184992
+Flow Epoch 80/100 | Loss: 0.176970
+Flow Epoch 90/100 | Loss: 0.169755
+Flow Epoch 100/100 | Loss: 0.165391
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3912
+Optimized Score Max (valid only):  0.8521
+Normalized Percentile Scores (100th / 80th / 50th): 0.8521 | 0.4659 | 0.3809
+------------------------------
+Seed: 4 completed
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[12.4406, 30.9130, 32.7375,  ..., 94.0661, 91.4168, 77.2376],
+        [22.4590, 22.2569, 29.5645,  ..., 90.5984, 91.9712, 78.2190],
+        [34.0315, 11.7210, 22.7748,  ..., 84.3162, 83.7099, 91.9981],
+        ...,
+        [86.6071, 73.7569, 70.4727,  ..., 22.8965, 33.6708, 23.4865],
+        [82.8775, 69.4382, 69.5371,  ..., 22.2961,  9.1948, 43.6267],
+        [89.2693, 98.5429, 96.5342,  ..., 32.3055, 41.8244,  9.5523]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.14, Max=16.70
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.327599
+Flow Epoch 20/100 | Loss: 0.285916
+Flow Epoch 30/100 | Loss: 0.253334
+Flow Epoch 40/100 | Loss: 0.231246
+Flow Epoch 50/100 | Loss: 0.216857
+Flow Epoch 60/100 | Loss: 0.205494
+Flow Epoch 70/100 | Loss: 0.193538
+Flow Epoch 80/100 | Loss: 0.184927
+Flow Epoch 90/100 | Loss: 0.176723
+Flow Epoch 100/100 | Loss: 0.170376
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3485
+Optimized Score Max (valid only):  0.7354
+Normalized Percentile Scores (100th / 80th / 50th): 0.7354 | 0.4027 | 0.3492
+------------------------------
+Seed: 5 completed
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[ 9.9716, 33.8249, 31.4346,  ..., 88.3352, 90.2596, 79.0972],
+        [19.6006, 21.4734, 31.3875,  ..., 92.6511, 96.2337, 84.7038],
+        [27.6217, 11.9326, 23.0602,  ..., 78.0491, 80.3227, 91.3183],
+        ...,
+        [75.8849, 70.3969, 65.2695,  ..., 22.7490, 33.6413, 20.0479],
+        [78.9506, 75.8622, 67.6656,  ..., 22.2912, 13.0169, 46.9883],
+        [80.6508, 95.6635, 88.8534,  ..., 30.5206, 42.6904, 10.7777]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.14, Max=18.04
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.325941
+Flow Epoch 20/100 | Loss: 0.283184
+Flow Epoch 30/100 | Loss: 0.247849
+Flow Epoch 40/100 | Loss: 0.226209
+Flow Epoch 50/100 | Loss: 0.210354
+Flow Epoch 60/100 | Loss: 0.197346
+Flow Epoch 70/100 | Loss: 0.184104
+Flow Epoch 80/100 | Loss: 0.176280
+Flow Epoch 90/100 | Loss: 0.170630
+Flow Epoch 100/100 | Loss: 0.166798
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3738
+Optimized Score Max (valid only):  0.9519
+Normalized Percentile Scores (100th / 80th / 50th): 0.9519 | 0.4398 | 0.3571
+------------------------------
+Seed: 6 completed
+Experiment: TFBind8-Exact-v0 | Device: cuda
+Loading task: TFBind8-Exact-v0...
+Data Processed (One-Hot+Noise). X_dim=32. Y_norm Mean=0.00, Std=1.00
+Executing Global Pure Matrix OT Pairing...
+Input Source: 16448, Candidate Targets: 6580
+dist_geom: torch.Size([16448, 6580]), gain: torch.Size([16448, 6580])
+dist_geom: tensor([[12.4307, 28.3957, 32.8941,  ..., 92.6117, 96.7549, 80.1498],
+        [23.5442, 21.2176, 35.5926,  ..., 94.2805, 99.6424, 83.3296],
+        [31.2829,  9.7513, 22.4589,  ..., 81.7051, 87.6481, 90.9958],
+        ...,
+        [77.0279, 69.4907, 68.1424,  ..., 24.3667, 35.3119, 23.8604],
+        [71.4497, 66.0809, 63.9212,  ..., 22.3659, 13.0511, 43.3062],
+        [74.4133, 85.4291, 86.6268,  ..., 29.6628, 40.7153, 10.4257]],
+       device='cuda:0'), gain: tensor([[1.2836, 1.2180, 1.2149,  ..., 1.2694, 0.8972, 1.1220],
+        [1.8485, 1.7828, 1.7797,  ..., 1.8342, 1.4620, 1.6868],
+        [1.4440, 1.3783, 1.3752,  ..., 1.4297, 1.0575, 1.2823],
+        ...,
+        [1.2890, 1.2234, 1.2203,  ..., 1.2747, 0.9026, 1.1274],
+        [1.4777, 1.4120, 1.4089,  ..., 1.4634, 1.0912, 1.3160],
+        [1.5485, 1.4828, 1.4797,  ..., 1.5342, 1.1620, 1.3868]],
+       device='cuda:0')
+Cleaning Results: Kept 16448, Dropped 0 (Too expensive or no gain)
+Cost Stats (Kept): Mean=6.14, Max=17.41
+Model Input Dimension: 32
+
+Training Score Proxy (for Guidance)...
+Proxy Training Data Shape: torch.Size([32898, 32])
+
+Start Training Flow Model...
+Flow Epoch 10/100 | Loss: 0.326549
+Flow Epoch 20/100 | Loss: 0.284614
+Flow Epoch 30/100 | Loss: 0.250076
+Flow Epoch 40/100 | Loss: 0.227108
+Flow Epoch 50/100 | Loss: 0.210434
+Flow Epoch 60/100 | Loss: 0.195980
+Flow Epoch 70/100 | Loss: 0.185888
+Flow Epoch 80/100 | Loss: 0.177735
+Flow Epoch 90/100 | Loss: 0.170659
+Flow Epoch 100/100 | Loss: 0.167685
+
+Running Evaluation with CFG + Proxy Screening...
+Generating 128 candidates (Scale=4.0) from random bottom 50% samples...
+Evaluating Top 128 Candidates selected by Proxy...
+------------------------------
+Optimization Results (Proxy Screened Top 128):
+Optimized Score Mean (valid only): 0.3567
+Optimized Score Max (valid only):  0.7576
+Normalized Percentile Scores (100th / 80th / 50th): 0.7576 | 0.4334 | 0.3445
+------------------------------
+Seed: 7 completed
+==============================
+Average Normalized Percentile Scores across seeds (100th / 80th / 50th): 0.8269 | 0.4461 | 0.3596
+Std of Normalized Percentile Scores across seeds (100th / 80th / 50th): 0.0739 | 0.0232 | 0.0121
+==============================

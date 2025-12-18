@@ -53,14 +53,14 @@ def main():
     print(f"Proxy Training Data Shape: {all_x.shape}") # 确认是 [32898, 32]
 
     # 简单的训练循环 (50 epochs 足够了)
-    for i in range(200):
-        proxy_opt.zero_grad()
-        pred_y = proxy(all_x)
-        loss = nn.MSELoss()(pred_y, all_y)
-        loss.backward()
-        proxy_opt.step()
-        if (i + 1) % 10 == 0:
-            print(f"Proxy Epoch {i+1}/50 | Loss: {loss.item():.4f}")
+    # for i in range(200):
+    #     proxy_opt.zero_grad()
+    #     pred_y = proxy(all_x)
+    #     loss = nn.MSELoss()(pred_y, all_y)
+    #     loss.backward()
+    #     proxy_opt.step()
+    #     if (i + 1) % 10 == 0:
+    #         print(f"Proxy Epoch {i+1}/50 | Loss: {loss.item():.4f}")
     
     # ==========================================
     # Part B: 训练 Flow Matching 模型
@@ -98,7 +98,7 @@ def main():
     # 1. 设置筛选参数
     # 我们要生成 1280 个候选样本，最后选出 128 个
     # 这样 Proxy 就能帮我们过滤掉那些“虽然符合条件但实际质量不高”的样本
-    NUM_CANDIDATES = 1280 
+    NUM_CANDIDATES = 128 
     FINAL_K = 128         
     BEST_SCALE = 4.0      # 根据之前的实验，4.0 是效果最好的 Scale
     
@@ -109,7 +109,7 @@ def main():
     # 确定 Source Pool 的范围 (Bottom 50%)
     # 注意：这里我们利用 y_sorted_indices 来定位低分区域
     num_total = offline_x.shape[0]
-    num_source_pool = int(num_total * 0.5) # 取前 50% 最差的作为池子
+    num_source_pool = int(num_total * 0.8) # 取前 50% 最差的作为池子
     
     # 获取 Bottom 50% 的索引
     source_indices = y_sorted_indices[:num_source_pool]
@@ -141,21 +141,21 @@ def main():
             steps=cfg.ODE_STEPS,
             guidance_scale=BEST_SCALE 
         )
-        
+    x_final = x_generated
     # 4. Proxy 打分筛选 (Screening)
-    print("Screening candidates with Proxy...")
-    proxy.eval()
-    with torch.no_grad():
-        # 让 Proxy 给这 1280 个生成样本打分
-        # 注意：Proxy 输出可能是 (N, 1)，需要 view(-1)
-        pred_scores = proxy(x_generated).view(-1)
+    # print("Screening candidates with Proxy...")
+    # proxy.eval()
+    # with torch.no_grad():
+    #     # 让 Proxy 给这 1280 个生成样本打分
+    #     # 注意：Proxy 输出可能是 (N, 1)，需要 view(-1)
+    #     pred_scores = proxy(x_generated).view(-1)
         
-        # 选出 Proxy 认为分数最高的 128 个 (Top K)
-        # 这一步是把“运气”变成“实力”的关键
-        top_scores, top_indices = torch.topk(pred_scores, k=FINAL_K)
+    #     # 选出 Proxy 认为分数最高的 128 个 (Top K)
+    #     # 这一步是把“运气”变成“实力”的关键
+    #     top_scores, top_indices = torch.topk(pred_scores, k=FINAL_K)
         
-        # 提取最终优胜者
-        x_final = x_generated[top_indices]
+    #     # 提取最终优胜者
+    #     x_final = x_generated[top_indices]
         # 同时也提取出它们对应的原始 x_start，方便计算 improvement
         # x_start_final = x_start_candidates[top_indices]
         # y_original_final = offline_y[selected_indices][top_indices.cpu()] # 对应的原始真实分数
